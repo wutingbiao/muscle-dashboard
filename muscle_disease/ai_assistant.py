@@ -132,6 +132,8 @@ def render_ai_assistant() -> None:
                     st.session_state["ai_error"] = f"接口请求失败：{type(exc).__name__}"
                 except (KeyError, IndexError, TypeError, ValueError, json.JSONDecodeError) as exc:
                     st.session_state["ai_error"] = f"返回内容解析失败：{exc}"
+                except RuntimeError as exc:
+                    st.session_state["ai_error"] = f"接口返回异常：{exc}"
                 except Exception as exc:
                     st.session_state["ai_error"] = f"分析失败：{type(exc).__name__}"
 
