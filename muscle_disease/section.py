@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
+import html
+import json
+from urllib.parse import quote
+
 import pandas as pd
 import plotly.express as px
+import requests
 import streamlit as st
+import streamlit.components.v1 as components
 
 from .data import load_catalog
 
@@ -53,6 +59,10 @@ def _column_config(display: pd.DataFrame) -> dict:
         config["细胞数"] = st.column_config.NumberColumn("细胞数", format="%d")
     if "大小(MB)" in display.columns:
         config["大小(MB)"] = st.column_config.NumberColumn("大小(MB)", format="%.1f")
+    if "文献标题" in display.columns:
+        config["文献标题"] = st.column_config.TextColumn("文献标题", width="medium")
+    if "简要描述" in display.columns:
+        config["简要描述"] = st.column_config.TextColumn("简要描述", width="large")
     return config
 
 
@@ -63,6 +73,8 @@ def _table(frame: pd.DataFrame, height: int = 420) -> None:
         "muscle_type_zh",
         "disease",
         "disease_category",
+        "study_title",
+        "study_accession",
         "obs_count",
         "file_size_mb",
         "single_disease_confidence",
@@ -77,6 +89,8 @@ def _table(frame: pd.DataFrame, height: int = 420) -> None:
             "muscle_type_zh": "肌肉类型",
             "disease": "疾病",
             "disease_category": "疾病分类",
+            "study_title": "文献标题",
+            "study_accession": "研究编号",
             "obs_count": "细胞数",
             "file_size_mb": "大小(MB)",
             "single_disease_confidence": "标签置信度",
@@ -101,6 +115,121 @@ def _download(frame: pd.DataFrame, filename: str) -> None:
         mime="text/csv",
         key=f"download_{filename}",
     )
+
+
+def _gs_uri(row: pd.Series) -> str:
+    cloud_path = str(row.get("cloud_path", "") or "")
+    if cloud_path.startswith("gs://"):
+        return cloud_path
+    url = str(row.get("h5ad_url", "") or "")
+    prefix = "https://storage.googleapis.com/"
+    return "gs://" + url.removeprefix(prefix) if url.startswith(prefix) else ""
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def _gcs_properties(gs_uri: str) -> dict:
+    """Read one public object's metadata; never fetches the object body."""
+    if not gs_uri.startswith("gs://"):
+        return {"error": "无效的 gs:// 路径"}
+    bucket, _, name = gs_uri[5:].partition("/")
+    if not bucket or not name:
+        return {"error": "无法解析桶名或对象名"}
+    url = (
+        "https://storage.googleapis.com/storage/v1/b/"
+        f"{quote(bucket)}/o/{quote(name, safe='')}"
+    )
+    try:
+        response = requests.get(url, params={"fields": "size,updated,contentType,md5Hash"}, timeout=20)
+        response.raise_for_status()
+        data = response.json()
+        size = int(data.get("size", 0))
+        return {
+            "size_bytes": size,
+            "size_mb": round(size / 1024 / 1024, 2),
+            "updated": data.get("updated", ""),
+            "content_type": data.get("contentType", ""),
+            "md5": data.get("md5Hash", ""),
+        }
+    except Exception as exc:
+        return {"error": f"{type(exc).__name__}: {exc}"}
+
+
+def _copy_button(text: str, label: str, key: str) -> None:
+    """A real clipboard button; works in the Streamlit Cloud HTTPS context."""
+    element_id = f"copy-{key}"
+    payload = json.dumps(text, ensure_ascii=False)
+    label_html = html.escape(label)
+    components.html(
+        f"""
+        <style>
+          html, body {{ margin: 0; padding: 0; background: transparent; }}
+          #{element_id} {{
+            width: 100%; border: 1px solid #2dd4bf; border-radius: 9px;
+            background: linear-gradient(135deg, #0f766e, #0e7490);
+            color: #ecfeff; font-size: 14px; font-weight: 650;
+            padding: 9px 12px; cursor: pointer;
+          }}
+          #{element_id}:hover {{ filter: brightness(1.15); }}
+        </style>
+        <button id="{element_id}">{label_html}</button>
+        <script>
+          const btn = document.getElementById("{element_id}");
+          const value = {payload};
+          btn.addEventListener("click", async () => {{
+            try {{
+              await navigator.clipboard.writeText(value);
+            }} catch (e) {{
+              const area = document.createElement("textarea");
+              area.value = value; document.body.appendChild(area);
+              area.select(); document.execCommand("copy"); area.remove();
+            }}
+            const old = btn.innerText;
+            btn.innerText = "✅ 已复制";
+            setTimeout(() => btn.innerText = old, 1500);
+          }});
+        </script>
+        """,
+        height=48,
+    )
+
+
+def _cloud_tools(frame: pd.DataFrame, key: str) -> None:
+    if frame.empty:
+        return
+    st.markdown("#### ☁️ 云端取件工具")
+    options = frame["sample_id"].astype(str).tolist()
+    labels = dict(zip(frame["sample_id"].astype(str), frame.get("disease", "")))
+    selected = st.selectbox(
+        "选择一个样本",
+        options,
+        format_func=lambda sample: f"{sample} · {labels.get(sample, '')}",
+        key=f"{key}_cloud_sample",
+    )
+    row = frame.loc[frame["sample_id"].astype(str).eq(selected)].iloc[0]
+    gs_uri = _gs_uri(row)
+    command = f'gsutil cp "{gs_uri}" .' if gs_uri else ""
+
+    col_copy, col_command = st.columns([1, 1])
+    with col_copy:
+        _copy_button(gs_uri, "📋 复制 gs:// 路径", f"{key}_gs")
+    with col_command:
+        if st.button("🖥️ 生成 gsutil 下载命令", key=f"{key}_cmd_button", use_container_width=True):
+            st.session_state[f"{key}_show_command"] = True
+
+    st.code(gs_uri, language=None)
+    if st.session_state.get(f"{key}_show_command"):
+        st.markdown("复制下面命令到终端，在你想保存文件的目录执行：")
+        st.code(command, language="bash")
+
+    props = _gcs_properties(gs_uri)
+    if "error" in props:
+        st.warning(f"云端属性读取失败：{props['error']}")
+    else:
+        c1, c2, c3 = st.columns(3)
+        c1.metric("云端文件大小", f"{props['size_mb']:,.2f} MB")
+        c2.metric("原始字节", f"{props['size_bytes']:,}")
+        c3.metric("文件类型", props["content_type"] or "未知")
+        st.caption(f"最后更新：{props['updated'].replace('T', ' ').replace('Z', ' UTC')} · 仅读取属性，没有下载文件")
 
 
 def _atrophy_tab(atrophy: pd.DataFrame, summary: dict) -> None:
@@ -144,14 +273,16 @@ def _atrophy_tab(atrophy: pd.DataFrame, summary: dict) -> None:
           if c in frame.columns]
     ]))
     _download(frame, "muscle_atrophy_samples.csv")
+    _cloud_tools(frame, "atrophy")
 
 
 def _core_tab(core: pd.DataFrame, summary: dict) -> None:
     st.markdown(
         "真正的人类 **骨骼肌** 疾病样本。已排除 `muscle-invasive bladder cancer`，"
         "横纹肌肉瘤因组织只写 `Muscle`，按疾病归类为骨骼肌肿瘤。"
+        "文献标题与摘要来自 **NCBI SRA / ENA** 的公开元数据。"
     )
-    categories = sorted(core["疾病分类"].dropna().unique())
+    categories = sorted(core["disease_category"].dropna().unique())
     col1, col2 = st.columns([2, 2])
     with col1:
         selected = st.multiselect(
@@ -161,28 +292,30 @@ def _core_tab(core: pd.DataFrame, summary: dict) -> None:
             key="core_categories",
         )
     with col2:
-        query = st.text_input("搜索疾病 / 样本编号 / 组织", key="core_search")
+        query = st.text_input("搜索疾病 / 样本编号 / 组织 / 文献", key="core_search")
 
-    frame = core[core["疾病分类"].isin(selected)].copy()
+    frame = core[core["disease_category"].isin(selected)].copy()
     if query:
         mask = (
-            frame["疾病"].str.contains(query, case=False, na=False)
-            | frame["样本编号"].str.contains(query, case=False, na=False)
-            | frame["组织"].str.contains(query, case=False, na=False)
+            frame["disease"].str.contains(query, case=False, na=False)
+            | frame["sample_id"].str.contains(query, case=False, na=False)
+            | frame["tissue"].str.contains(query, case=False, na=False)
+            | frame["study_title"].str.contains(query, case=False, na=False)
         )
         frame = frame[mask]
 
     left, right = st.columns([1, 2])
     with left:
         st.metric("筛选后样本", f"{len(frame)} 条")
-        st.metric("细胞总数", f"{int(frame['细胞数'].sum()):,}")
-        total_size = pd.to_numeric(frame["文件大小(MB)"], errors="coerce").sum()
+        st.metric("细胞总数", f"{int(frame['obs_count'].sum()):,}")
+        total_size = pd.to_numeric(frame["file_size_mb"], errors="coerce").sum()
         st.metric("全部下载约", f"{total_size:,.1f} MB")
     with right:
-        _bar_chart(frame, "疾病分类", "骨骼肌疾病分类", "core_bar")
+        _bar_chart(frame, "disease_category", "骨骼肌疾病分类", "core_bar")
 
     _table(frame, height=460)
     _download(frame, "skeletal_muscle_disease_catalog.csv")
+    _cloud_tools(frame, "core")
 
 
 def _all_tab(all_muscle: pd.DataFrame) -> None:
@@ -232,6 +365,7 @@ def _all_tab(all_muscle: pd.DataFrame) -> None:
 
     _table(frame, height=500)
     _download(frame, "all_human_muscle_samples.csv")
+    _cloud_tools(frame, "all")
 
 
 def _about_tab(summary: dict) -> None:

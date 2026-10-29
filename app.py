@@ -3,14 +3,112 @@ import sqlite3
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
 import time
 from muscle_disease.section import render_section
+
+pio.templates.default = "plotly_dark"
 
 # ================= 1. 页面基础设置 =================
 st.set_page_config(
     page_title="多物种肌肉组织数据看板", 
     layout="wide", 
     page_icon="🧬"
+)
+
+st.markdown(
+    """
+    <style>
+    :root {
+        --neon: #2dd4bf;
+        --ink: #e6f1ff;
+        --muted: #94a3b8;
+        --panel: rgba(10, 20, 35, 0.82);
+    }
+    [data-testid="stAppViewContainer"] {
+        background:
+            radial-gradient(circle at 8% 0%, rgba(45, 212, 191, 0.18), transparent 32%),
+            radial-gradient(circle at 92% 8%, rgba(59, 130, 246, 0.16), transparent 34%),
+            linear-gradient(155deg, #040b15 0%, #081321 48%, #0a1020 100%);
+        color: var(--ink);
+    }
+    [data-testid="stHeader"] {
+        background: rgba(4, 11, 21, 0.72);
+        backdrop-filter: blur(14px);
+        border-bottom: 1px solid rgba(45, 212, 191, 0.14);
+    }
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #06111e, #0a0f1d);
+        border-right: 1px solid rgba(45, 212, 191, 0.16);
+    }
+    h1, h2, h3, h4, h5 { color: #f1f5f9; letter-spacing: 0.01em; }
+    h1 { text-shadow: 0 0 30px rgba(45, 212, 191, 0.35); }
+    p, label, .stMarkdown, [data-testid="stCaptionContainer"] { color: #cbd5e1; }
+    a { color: #5eead4; }
+    hr { border-color: rgba(148, 163, 184, 0.16); }
+    [data-testid="stMetric"] {
+        background: linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(15, 118, 110, 0.16));
+        border: 1px solid rgba(45, 212, 191, 0.24);
+        border-radius: 14px;
+        padding: 12px 16px;
+        box-shadow: 0 10px 32px rgba(0, 0, 0, 0.22);
+    }
+    [data-testid="stMetricValue"] { color: #5eead4; }
+    [data-testid="stMetricLabel"] { color: #94a3b8; }
+    .stTabs [data-baseweb="tab-list"] { gap: 8px; border-bottom: 1px solid rgba(45, 212, 191, 0.16); }
+    .stTabs [data-baseweb="tab"] {
+        background: rgba(15, 23, 42, 0.66);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        border-radius: 10px 10px 0 0;
+        color: #cbd5e1;
+        padding: 8px 14px;
+    }
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, rgba(15, 118, 110, 0.75), rgba(14, 116, 144, 0.55));
+        color: #ffffff;
+        border-color: rgba(45, 212, 191, 0.55);
+    }
+    [data-testid="stDataFrame"] {
+        border: 1px solid rgba(45, 212, 191, 0.18);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    [data-testid="stExpander"] {
+        background: rgba(10, 20, 35, 0.72);
+        border: 1px solid rgba(45, 212, 191, 0.16);
+        border-radius: 12px;
+    }
+    .stButton > button, [data-testid="stDownloadButton"] > button {
+        border-radius: 10px;
+        border: 1px solid rgba(45, 212, 191, 0.42);
+        background: linear-gradient(135deg, #0f766e, #0e7490);
+        color: #ecfeff;
+        font-weight: 650;
+    }
+    .stButton > button:hover, [data-testid="stDownloadButton"] > button:hover {
+        border-color: #5eead4;
+        filter: brightness(1.12);
+    }
+    [data-testid="stTextInput"] input,
+    [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+    [data-testid="stMultiSelect"] div[data-baseweb="select"] > div {
+        background: #0b1728;
+        color: #e2e8f0;
+        border-color: rgba(45, 212, 191, 0.28);
+    }
+    [data-testid="stCode"] {
+        background: #020617;
+        border: 1px solid rgba(45, 212, 191, 0.2);
+        border-radius: 10px;
+    }
+    [data-testid="stAlert"] {
+        background: rgba(10, 20, 35, 0.88);
+        border: 1px solid rgba(45, 212, 191, 0.2);
+        border-radius: 12px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
 st.title("🧬 多物种肌肉组织数据看板")
