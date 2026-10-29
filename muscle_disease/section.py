@@ -15,6 +15,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 from .data import load_catalog
+from .ai_assistant import render_ai_assistant
 
 ACCENT = "#2A9D8F"
 PALETTE = ["#2A9D8F", "#E76F51", "#457B9D", "#E9C46A", "#8E7DBE", "#6A994E"]
@@ -240,6 +241,8 @@ def _mock_heatmap(core: pd.DataFrame, key: str = "mock_heatmap") -> None:
     if core.empty:
         st.info("当前筛选没有样本，无法显示热力图。")
         return
+    st.markdown("#### 🔥 交互式疾病基因热力图")
+    st.caption("横轴为真实样本编号，纵轴为 5 个关键基因；当前使用 Mock 表达量。")
     try:
         frame = core.drop_duplicates("sample_id").head(18)
         samples = frame["sample_id"].astype(str).tolist()
@@ -252,8 +255,16 @@ def _mock_heatmap(core: pd.DataFrame, key: str = "mock_heatmap") -> None:
         # Add a subtle mock pattern so the placeholder looks biologically plausible.
         z[0, :] += 0.5
         z[2, :] += 0.3
-        z[3, :] += np.where(frame["disease_category"].eq("肌营养不良").to_numpy(), 0.7, 0)
-        z[4, :] += np.where(frame["disease_category"].eq("肌营养不良").to_numpy(), 0.5, 0)
+        z[3, :] += np.where(
+            frame["disease"].str.contains("dystroph", case=False, na=False).to_numpy(),
+            0.7,
+            0,
+        )
+        z[4, :] += np.where(
+            frame["disease"].str.contains("dystroph", case=False, na=False).to_numpy(),
+            0.5,
+            0,
+        )
         z = np.clip(z, 0, 4)
         diseases = np.tile(frame["disease"].astype(str).to_numpy(), (len(genes), 1))
 
@@ -322,6 +333,7 @@ def _atrophy_tab(atrophy: pd.DataFrame, summary: dict) -> None:
     with right:
         _bar_chart(frame, "atrophy_group", "萎缩相关样本分布", "atrophy_bar")
 
+    _mock_heatmap(frame, "atrophy_mock_heatmap")
     if (frame["atrophy_group"] == "肌少症").any():
         st.info(
             "肌少症只有 2 条，且原始研究可能混合年轻、老年和肌少症受试者；"
@@ -485,6 +497,9 @@ def render_section() -> None:
         f"{summary.get('core_total_size_mb', 0):,.1f} MB；"
         "先看大小，再决定下载哪一个。"
     )
+
+    with st.container(border=True):
+        render_ai_assistant()
 
     tab1, tab2, tab3, tab4 = st.tabs(
         [

@@ -6,7 +6,6 @@ import plotly.graph_objects as go
 import plotly.io as pio
 import time
 from muscle_disease.section import render_section
-from muscle_disease.ai_assistant import render_ai_assistant
 
 pio.templates.default = "plotly_white"
 
@@ -339,6 +338,3 @@ with st.sidebar:
             st.success(f"✅ UID {uid_to_fix} 修正成功！")
             st.cache_data.clear()
             st.rerun()
-
-    st.divider()
-    render_ai_assistant()
