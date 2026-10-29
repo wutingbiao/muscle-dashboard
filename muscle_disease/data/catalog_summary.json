@@ -1,0 +1,27 @@
+{
+  "release": "2026-01-12",
+  "human_samples": 35259,
+  "all_muscle_samples": 540,
+  "skeletal_samples": 65,
+  "skeletal_disease_samples": 16,
+  "atrophy_related_samples": 12,
+  "cachexia_samples": 0,
+  "explicit_muscle_atrophy_samples": 0,
+  "sarcopenia_samples": 2,
+  "by_muscle_type": {
+    "cardiac": 424,
+    "skeletal": 65,
+    "smooth": 49,
+    "mixed": 2
+  },
+  "by_disease_category": {
+    "肌营养不良": 8,
+    "糖尿病相关肌病": 2,
+    "肌少症": 2,
+    "骨骼肌肿瘤": 2,
+    "遗传性骨化性肌病": 1,
+    "其他骨骼肌疾病": 1
+  },
+  "core_total_size_mb": 1632.8,
+  "atrophy_total_size_mb": 704.0
+}

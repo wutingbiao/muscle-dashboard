@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import time
+from muscle_disease.section import render_section
 
 # ================= 1. 页面基础设置 =================
 st.set_page_config(
@@ -190,7 +191,11 @@ with tab4:
             fig_vol.add_vline(x=-1, line_dash="dash", line_color="black")
             st.plotly_chart(fig_vol, use_container_width=True)
 
-# ================= 7. 侧边栏修改 =================
+# ================= 7. 人类肌肉样本目录（scBaseCount） =================
+st.divider()
+render_section()
+
+# ================= 8. 侧边栏修改 =================
 with st.sidebar:
     st.header("✍️ 人工手动修正")
     uid_to_fix = st.text_input("输入要修正的 UID")
