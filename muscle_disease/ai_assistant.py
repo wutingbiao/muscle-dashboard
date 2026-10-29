@@ -97,7 +97,7 @@ def call_deepseek(api_key: str, query: str, schema: str) -> dict[str, Any]:
 
 
 def render_ai_assistant() -> None:
-    st.markdown("### 🧬 AI 科研小助手")
+    st.markdown("### 🧬 科研小助手")
     st.caption("用自然语言描述你要找的样本，AI 只提取筛选条件，不直接改数据。")
 
     with st.form("ai_assistant_form", clear_on_submit=False):

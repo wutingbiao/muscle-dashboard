@@ -274,7 +274,7 @@ def _mock_heatmap(core: pd.DataFrame, key: str = "mock_heatmap") -> None:
                 x=samples,
                 y=genes,
                 customdata=diseases,
-                colorscale="Viridis",
+                colorscale="RdBu_r",
                 zmin=0,
                 zmax=4,
                 colorbar=dict(title="Mock<br>expression", thickness=12),
@@ -296,6 +296,7 @@ def _mock_heatmap(core: pd.DataFrame, key: str = "mock_heatmap") -> None:
         )
         st.plotly_chart(fig, use_container_width=True, key=key)
         st.caption(
+            "颜色：蓝色 = 低表达，红色 = 高表达。"
             "⚠️ 当前为模拟丰度数据，仅用于验证交互和版式；"
             "接入真实 h5ad 后会替换为实际表达矩阵。"
         )
