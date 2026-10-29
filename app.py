@@ -7,7 +7,7 @@ import plotly.io as pio
 import time
 from muscle_disease.section import render_section
 
-pio.templates.default = "plotly_dark"
+pio.templates.default = "plotly_white"
 
 # ================= 1. 页面基础设置 =================
 st.set_page_config(
@@ -18,95 +18,107 @@ st.set_page_config(
 
 st.markdown(
     """
-    <style>
-    :root {
-        --neon: #2dd4bf;
-        --ink: #e6f1ff;
-        --muted: #94a3b8;
-        --panel: rgba(10, 20, 35, 0.82);
-    }
-    [data-testid="stAppViewContainer"] {
-        background:
-            radial-gradient(circle at 8% 0%, rgba(45, 212, 191, 0.18), transparent 32%),
-            radial-gradient(circle at 92% 8%, rgba(59, 130, 246, 0.16), transparent 34%),
-            linear-gradient(155deg, #040b15 0%, #081321 48%, #0a1020 100%);
-        color: var(--ink);
-    }
-    [data-testid="stHeader"] {
-        background: rgba(4, 11, 21, 0.72);
-        backdrop-filter: blur(14px);
-        border-bottom: 1px solid rgba(45, 212, 191, 0.14);
-    }
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #06111e, #0a0f1d);
-        border-right: 1px solid rgba(45, 212, 191, 0.16);
-    }
-    h1, h2, h3, h4, h5 { color: #f1f5f9; letter-spacing: 0.01em; }
-    h1 { text-shadow: 0 0 30px rgba(45, 212, 191, 0.35); }
-    p, label, .stMarkdown, [data-testid="stCaptionContainer"] { color: #cbd5e1; }
-    a { color: #5eead4; }
-    hr { border-color: rgba(148, 163, 184, 0.16); }
-    [data-testid="stMetric"] {
-        background: linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(15, 118, 110, 0.16));
-        border: 1px solid rgba(45, 212, 191, 0.24);
-        border-radius: 14px;
-        padding: 12px 16px;
-        box-shadow: 0 10px 32px rgba(0, 0, 0, 0.22);
-    }
-    [data-testid="stMetricValue"] { color: #5eead4; }
-    [data-testid="stMetricLabel"] { color: #94a3b8; }
-    .stTabs [data-baseweb="tab-list"] { gap: 8px; border-bottom: 1px solid rgba(45, 212, 191, 0.16); }
-    .stTabs [data-baseweb="tab"] {
-        background: rgba(15, 23, 42, 0.66);
-        border: 1px solid rgba(148, 163, 184, 0.14);
-        border-radius: 10px 10px 0 0;
-        color: #cbd5e1;
-        padding: 8px 14px;
-    }
-    .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, rgba(15, 118, 110, 0.75), rgba(14, 116, 144, 0.55));
-        color: #ffffff;
-        border-color: rgba(45, 212, 191, 0.55);
-    }
-    [data-testid="stDataFrame"] {
-        border: 1px solid rgba(45, 212, 191, 0.18);
-        border-radius: 12px;
-        overflow: hidden;
-    }
-    [data-testid="stExpander"] {
-        background: rgba(10, 20, 35, 0.72);
-        border: 1px solid rgba(45, 212, 191, 0.16);
-        border-radius: 12px;
-    }
-    .stButton > button, [data-testid="stDownloadButton"] > button {
-        border-radius: 10px;
-        border: 1px solid rgba(45, 212, 191, 0.42);
-        background: linear-gradient(135deg, #0f766e, #0e7490);
-        color: #ecfeff;
-        font-weight: 650;
-    }
-    .stButton > button:hover, [data-testid="stDownloadButton"] > button:hover {
-        border-color: #5eead4;
-        filter: brightness(1.12);
-    }
-    [data-testid="stTextInput"] input,
-    [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
-    [data-testid="stMultiSelect"] div[data-baseweb="select"] > div {
-        background: #0b1728;
-        color: #e2e8f0;
-        border-color: rgba(45, 212, 191, 0.28);
-    }
-    [data-testid="stCode"] {
-        background: #020617;
-        border: 1px solid rgba(45, 212, 191, 0.2);
-        border-radius: 10px;
-    }
-    [data-testid="stAlert"] {
-        background: rgba(10, 20, 35, 0.88);
-        border: 1px solid rgba(45, 212, 191, 0.2);
-        border-radius: 12px;
-    }
-    </style>
+<style>
+:root {
+    --navy: #0b2a45;
+    --ink: #163a57;
+    --muted: #5b7c99;
+    --line: #cfe3f2;
+    --accent: #0f766e;
+    --accent2: #0e7490;
+}
+[data-testid="stAppViewContainer"] {
+    background:
+        radial-gradient(circle at 8% 0%, rgba(14, 165, 233, 0.10), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(20, 184, 166, 0.10), transparent 30%),
+        linear-gradient(180deg, #f8fbff 0%, #edf7fc 48%, #e9f4fa 100%);
+    color: var(--ink);
+}
+[data-testid="stHeader"] {
+    background: rgba(248, 251, 255, 0.88);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+}
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #f2f9ff, #e6f1fa);
+    border-right: 1px solid var(--line);
+}
+h1, h2, h3, h4, h5 { color: var(--navy); letter-spacing: 0.01em; }
+h1 {
+    border-left: 6px solid var(--accent);
+    padding-left: 16px;
+    text-shadow: none;
+}
+p, label, .stMarkdown, [data-testid="stCaptionContainer"] { color: #334e68; }
+a { color: var(--accent); }
+hr { border-color: var(--line); }
+[data-testid="stMetric"] {
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px 16px;
+    box-shadow: 0 8px 24px rgba(21, 73, 105, 0.08);
+}
+[data-testid="stMetricValue"] { color: var(--accent); }
+[data-testid="stMetricLabel"] { color: var(--muted); }
+.stTabs [data-baseweb="tab-list"] {
+    gap: 8px;
+    border-bottom: 1px solid var(--line);
+}
+.stTabs [data-baseweb="tab"] {
+    background: #ffffff;
+    border: 1px solid #d7e7f2;
+    border-radius: 10px 10px 0 0;
+    color: #35566f;
+    padding: 8px 14px;
+}
+.stTabs [aria-selected="true"] {
+    background: linear-gradient(135deg, #0f766e, #0e7490);
+    color: #ffffff;
+    border-color: var(--accent);
+}
+[data-testid="stDataFrame"] {
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(21, 73, 105, 0.06);
+}
+[data-testid="stExpander"] {
+    background: #ffffff;
+    border: 1px solid #d7e7f2;
+    border-radius: 12px;
+}
+.stButton > button, [data-testid="stDownloadButton"] > button {
+    border-radius: 10px;
+    border: 1px solid var(--accent);
+    background: linear-gradient(135deg, #0f766e, #0e7490);
+    color: #ffffff;
+    font-weight: 650;
+}
+.stButton > button:hover, [data-testid="stDownloadButton"] > button:hover {
+    border-color: #115e59;
+    filter: brightness(1.08);
+}
+[data-testid="stTextInput"] input,
+[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+[data-testid="stMultiSelect"] div[data-baseweb="select"] > div {
+    background: #ffffff;
+    color: #0b2a45;
+    border-color: #c7dceb;
+}
+[data-testid="stCode"] {
+    background: #f4f9fd;
+    border: 1px solid #d7e7f2;
+    border-radius: 10px;
+    color: #0b2a45;
+}
+[data-testid="stAlert"] {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 12px;
+}
+</style>
     """,
     unsafe_allow_html=True,
 )
