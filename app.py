@@ -11,7 +11,7 @@ pio.templates.default = "plotly_white"
 
 # ================= 1. 页面基础设置 =================
 st.set_page_config(
-    page_title="多物种肌肉组织数据看板", 
+    page_title="肌因猎手 | GeneHunter · 肌肉疾病图谱", 
     layout="wide", 
     page_icon="🧬"
 )
@@ -141,8 +141,11 @@ hr { border-color: var(--line); }
     unsafe_allow_html=True,
 )
 
-st.title("🧬 多物种肌肉组织数据看板")
-st.markdown("全球 GEO 数据集全景检索与可视化 | **Multi-species Muscle Data Dashboard**")
+st.title("🧬 肌因猎手 | GeneHunter")
+st.markdown(
+    "多物种肌肉疾病数据图谱 · **Multi-species Muscle Disease Atlas**  \n"
+    "从 scBaseCount 云端目录到人类骨骼肌疾病样本"
+)
 
 # ================= 2. 数据加载 =================
 DB_PATH = "muscle_research.db"
