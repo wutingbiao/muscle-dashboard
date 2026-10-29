@@ -118,6 +118,24 @@ hr { border-color: var(--line); }
     border: 1px solid #bae6fd;
     border-radius: 12px;
 }
+/* High-contrast overrides for text nested inside native controls */
+.stTabs [data-baseweb="tab"] p,
+.stTabs [data-baseweb="tab"] span,
+.stTabs [data-baseweb="tab"] div {
+    color: #274b66 !important;
+}
+.stTabs [aria-selected="true"] p,
+.stTabs [aria-selected="true"] span,
+.stTabs [aria-selected="true"] div {
+    color: #ffffff !important;
+}
+.stButton > button,
+.stButton > button *,
+[data-testid="stDownloadButton"] > button,
+[data-testid="stDownloadButton"] > button * {
+    color: #ffffff !important;
+    opacity: 1 !important;
+}
 </style>
     """,
     unsafe_allow_html=True,
