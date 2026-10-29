@@ -7,7 +7,9 @@ import json
 from urllib.parse import quote
 
 import pandas as pd
+import numpy as np
 import plotly.express as px
+import plotly.graph_objects as go
 import requests
 import streamlit as st
 import streamlit.components.v1 as components
@@ -232,6 +234,65 @@ def _cloud_tools(frame: pd.DataFrame, key: str) -> None:
         st.caption(f"最后更新：{props['updated'].replace('T', ' ').replace('Z', ' UTC')} · 仅读取属性，没有下载文件")
 
 
+def _mock_heatmap(core: pd.DataFrame, key: str = "mock_heatmap") -> None:
+    """Interactive placeholder heatmap; values are deterministic mock data."""
+    genes = ["MYH1", "MYH2", "ACTA1", "FBXO32", "TRIM63"]
+    if core.empty:
+        st.info("当前筛选没有样本，无法显示热力图。")
+        return
+    try:
+        frame = core.drop_duplicates("sample_id").head(18)
+        samples = frame["sample_id"].astype(str).tolist()
+        rng = np.random.default_rng(20261029)
+        z = np.clip(
+            rng.normal(loc=1.6, scale=0.75, size=(len(genes), len(samples))),
+            0,
+            4,
+        )
+        # Add a subtle mock pattern so the placeholder looks biologically plausible.
+        z[0, :] += 0.5
+        z[2, :] += 0.3
+        z[3, :] += np.where(frame["disease_category"].eq("肌营养不良").to_numpy(), 0.7, 0)
+        z[4, :] += np.where(frame["disease_category"].eq("肌营养不良").to_numpy(), 0.5, 0)
+        z = np.clip(z, 0, 4)
+        diseases = np.tile(frame["disease"].astype(str).to_numpy(), (len(genes), 1))
+
+        fig = go.Figure(
+            data=go.Heatmap(
+                z=z,
+                x=samples,
+                y=genes,
+                customdata=diseases,
+                colorscale="Viridis",
+                zmin=0,
+                zmax=4,
+                colorbar=dict(title="Mock<br>expression", thickness=12),
+                hovertemplate=(
+                    "样本：%{x}<br>基因：%{y}<br>"
+                    "模拟表达量：%{z:.2f}<br>疾病：%{customdata}<extra></extra>"
+                ),
+            )
+        )
+        fig.update_layout(
+            title="疾病相关基因表达热力图（Mock Data）",
+            height=450,
+            margin=dict(t=55, b=90, l=10, r=10),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#0b2a45"),
+            xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
+            yaxis=dict(tickfont=dict(size=12)),
+        )
+        st.plotly_chart(fig, use_container_width=True, key=key)
+        st.caption(
+            "⚠️ 当前为模拟丰度数据，仅用于验证交互和版式；"
+            "接入真实 h5ad 后会替换为实际表达矩阵。"
+        )
+    except Exception as exc:
+        st.warning(f"热力图暂时无法显示：{type(exc).__name__}")
+        st.caption("这不会影响其他表格和下载功能。")
+
+
 def _atrophy_tab(atrophy: pd.DataFrame, summary: dict) -> None:
     st.markdown(
         "这里只收 **肌少症、肌营养不良、恶病质、明确肌肉萎缩** 标签。"
@@ -313,6 +374,7 @@ def _core_tab(core: pd.DataFrame, summary: dict) -> None:
     with right:
         _bar_chart(frame, "disease_category", "骨骼肌疾病分类", "core_bar")
 
+    _mock_heatmap(frame, "core_mock_heatmap")
     _table(frame, height=460)
     _download(frame, "skeletal_muscle_disease_catalog.csv")
     _cloud_tools(frame, "core")
