@@ -305,6 +305,128 @@ def _mock_heatmap(core: pd.DataFrame, key: str = "mock_heatmap") -> None:
         st.caption("这不会影响其他表格和下载功能。")
 
 
+RADAR_LABELS = [
+    "肌细胞比例",
+    "萎缩基因活跃度",
+    "炎症反应",
+    "线粒体质量",
+    "纤维化程度",
+    "再生能力",
+]
+
+RADAR_PROFILES = {
+    "DMD": [35, 92, 85, 42, 80, 28],
+    "DM1": [50, 72, 55, 48, 58, 38],
+    "Sarcopenia": [60, 78, 38, 32, 45, 24],
+    "Rhabdomyosarcoma": [25, 30, 52, 62, 40, 88],
+    "FOP": [45, 55, 66, 50, 86, 35],
+    "Constriction Band": [58, 48, 36, 55, 52, 42],
+    "Diabetic myopathy": [55, 62, 44, 38, 50, 32],
+    "Other": [50, 50, 50, 50, 50, 50],
+}
+
+
+def _disease_subtype(disease: str) -> str:
+    text = str(disease).casefold()
+    if "duchenne" in text or "dmd" in text:
+        return "DMD"
+    if "myotonic" in text or "dm1" in text:
+        return "DM1"
+    if "sarcopen" in text:
+        return "Sarcopenia"
+    if "rhabdomyosarcoma" in text:
+        return "Rhabdomyosarcoma"
+    if "fibrodysplasia" in text:
+        return "FOP"
+    if "constriction band" in text:
+        return "Constriction Band"
+    if "diabetic" in text:
+        return "Diabetic myopathy"
+    return "Other"
+
+
+def _mock_radar(frame: pd.DataFrame, key: str) -> None:
+    """Interactive six-axis disease profile; values are mock scores (0-100)."""
+    if frame.empty:
+        return
+    st.markdown("#### 🕸️ 样本特征雷达图")
+    st.caption("6 个疾病维度、0–100 分；当前为基于疾病类型的 Mock 特征，不是实测值。")
+    try:
+        groups = frame["disease"].map(_disease_subtype)
+        available = groups.value_counts()
+        order = [name for name in RADAR_PROFILES if name in available.index]
+        order += [name for name in available.index if name not in order]
+        if not order:
+            st.info("当前筛选没有可展示的疾病类型。")
+            return
+        selected_label = st.selectbox(
+            "选择疾病类型",
+            [f"{name} · {int(available.get(name, 0))} 个样本" for name in order],
+            key=f"{key}_select",
+        )
+        selected = selected_label.split(" · ")[0]
+        values = RADAR_PROFILES.get(selected, RADAR_PROFILES["Other"])
+        present_profiles = [RADAR_PROFILES.get(name, RADAR_PROFILES["Other"]) for name in order]
+        average = np.mean(np.asarray(present_profiles, dtype=float), axis=0).tolist()
+
+        theta = RADAR_LABELS + [RADAR_LABELS[0]]
+        selected_r = values + [values[0]]
+        average_r = average + [average[0]]
+
+        fig = go.Figure()
+        fig.add_trace(
+            go.Scatterpolar(
+                r=selected_r,
+                theta=theta,
+                name=selected,
+                fill="toself",
+                fillcolor="rgba(220, 38, 38, 0.20)",
+                line=dict(color="#dc2626", width=3),
+                hovertemplate="%{theta}<br>评分：%{r:.0f} / 100<extra></extra>",
+            )
+        )
+        fig.add_trace(
+            go.Scatterpolar(
+                r=average_r,
+                theta=theta,
+                name="可见疾病平均",
+                fill="none",
+                line=dict(color="#64748b", width=1.5, dash="dot"),
+                hovertemplate="%{theta}<br>平均：%{r:.0f} / 100<extra></extra>",
+            )
+        )
+        fig.update_layout(
+            title=f"{selected} 疾病特征雷达图（Mock Data）",
+            height=470,
+            margin=dict(t=55, b=40, l=40, r=40),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#0b2a45"),
+            legend=dict(orientation="h", y=-0.08, x=0.5, xanchor="center"),
+            polar=dict(
+                bgcolor="rgba(255,255,255,0.42)",
+                radialaxis=dict(
+                    range=[0, 100],
+                    tickvals=[20, 40, 60, 80, 100],
+                    gridcolor="rgba(11,42,69,0.12)",
+                    tickfont=dict(color="#5b7c99", size=10),
+                ),
+                angularaxis=dict(
+                    gridcolor="rgba(11,42,69,0.12)",
+                    tickfont=dict(color="#163a57", size=11),
+                ),
+            ),
+        )
+        st.plotly_chart(fig, use_container_width=True, key=key)
+        st.caption(
+            f"{selected}：{int(available.get(selected, 0))} 条样本；"
+            "数值越高表示该维度越强。Mock 数据仅用于交互演示。"
+        )
+    except Exception as exc:
+        st.warning(f"雷达图暂时无法显示：{type(exc).__name__}")
+        st.caption("这不会影响热力图、表格和下载功能。")
+
+
 def _atrophy_tab(atrophy: pd.DataFrame, summary: dict) -> None:
     st.markdown(
         "这里只收 **肌少症、肌营养不良、恶病质、明确肌肉萎缩** 标签。"
@@ -335,6 +457,7 @@ def _atrophy_tab(atrophy: pd.DataFrame, summary: dict) -> None:
         _bar_chart(frame, "atrophy_group", "萎缩相关样本分布", "atrophy_bar")
 
     _mock_heatmap(frame, "atrophy_mock_heatmap")
+    _mock_radar(frame, "atrophy_radar")
     if (frame["atrophy_group"] == "肌少症").any():
         st.info(
             "肌少症只有 2 条，且原始研究可能混合年轻、老年和肌少症受试者；"
@@ -388,6 +511,7 @@ def _core_tab(core: pd.DataFrame, summary: dict) -> None:
         _bar_chart(frame, "disease_category", "骨骼肌疾病分类", "core_bar")
 
     _mock_heatmap(frame, "core_mock_heatmap")
+    _mock_radar(frame, "core_radar")
     _table(frame, height=460)
     _download(frame, "skeletal_muscle_disease_catalog.csv")
     _cloud_tools(frame, "core")
