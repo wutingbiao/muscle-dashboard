@@ -235,7 +235,11 @@ def _cloud_tools(frame: pd.DataFrame, key: str) -> None:
         st.caption(f"最后更新：{props['updated'].replace('T', ' ').replace('Z', ' UTC')} · 仅读取属性，没有下载文件")
 
 
-def _mock_heatmap(core: pd.DataFrame, key: str = "mock_heatmap") -> None:
+def _mock_heatmap(
+    core: pd.DataFrame,
+    key: str = "mock_heatmap",
+    height: int = 340,
+) -> None:
     """Interactive placeholder heatmap; values are deterministic mock data."""
     genes = ["MYH1", "MYH2", "ACTA1", "FBXO32", "TRIM63"]
     if core.empty:
@@ -286,8 +290,8 @@ def _mock_heatmap(core: pd.DataFrame, key: str = "mock_heatmap") -> None:
         )
         fig.update_layout(
             title="疾病相关基因表达热力图（Mock Data）",
-            height=450,
-            margin=dict(t=55, b=90, l=10, r=10),
+            height=height,
+            margin=dict(t=50, b=85, l=10, r=10),
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             font=dict(color="#0b2a45"),
@@ -397,8 +401,8 @@ def _mock_radar(frame: pd.DataFrame, key: str) -> None:
         )
         fig.update_layout(
             title=f"{selected} 疾病特征雷达图（Mock Data）",
-            height=470,
-            margin=dict(t=55, b=40, l=40, r=40),
+            height=390,
+            margin=dict(t=50, b=30, l=28, r=28),
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             font=dict(color="#0b2a45"),
@@ -425,6 +429,17 @@ def _mock_radar(frame: pd.DataFrame, key: str) -> None:
     except Exception as exc:
         st.warning(f"雷达图暂时无法显示：{type(exc).__name__}")
         st.caption("这不会影响热力图、表格和下载功能。")
+
+
+def _research_charts(frame: pd.DataFrame, prefix: str) -> None:
+    """Place the heatmap and radar side by side so both are visible at once."""
+    st.markdown("### 🔬 疾病特征可视化")
+    st.caption("左侧：基因表达热力图 · 右侧：六维疾病特征雷达图")
+    left, right = st.columns([1.55, 1], gap="large")
+    with left:
+        _mock_heatmap(frame, f"{prefix}_heatmap", height=340)
+    with right:
+        _mock_radar(frame, f"{prefix}_radar")
 
 
 def _atrophy_tab(atrophy: pd.DataFrame, summary: dict) -> None:
@@ -456,8 +471,7 @@ def _atrophy_tab(atrophy: pd.DataFrame, summary: dict) -> None:
     with right:
         _bar_chart(frame, "atrophy_group", "萎缩相关样本分布", "atrophy_bar")
 
-    _mock_heatmap(frame, "atrophy_mock_heatmap")
-    _mock_radar(frame, "atrophy_radar")
+    _research_charts(frame, "atrophy")
     if (frame["atrophy_group"] == "肌少症").any():
         st.info(
             "肌少症只有 2 条，且原始研究可能混合年轻、老年和肌少症受试者；"
@@ -510,8 +524,7 @@ def _core_tab(core: pd.DataFrame, summary: dict) -> None:
     with right:
         _bar_chart(frame, "disease_category", "骨骼肌疾病分类", "core_bar")
 
-    _mock_heatmap(frame, "core_mock_heatmap")
-    _mock_radar(frame, "core_radar")
+    _research_charts(frame, "core")
     _table(frame, height=460)
     _download(frame, "skeletal_muscle_disease_catalog.csv")
     _cloud_tools(frame, "core")
