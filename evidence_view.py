@@ -11,6 +11,7 @@ import streamlit as st
 
 BASE = Path(__file__).resolve().parent
 DATA_PATH = BASE / "evidence_data" / "evidence.csv"
+GENELAB_PATH = BASE / "evidence_data" / "genelab_evidence.csv"
 COLORS = ["#0f766e", "#0e7490", "#7c3aed", "#dc2626", "#ea580c", "#64748b"]
 GENE_ALIASES = {
     "MURF1": "TRIM63",
@@ -53,6 +54,14 @@ def _source_url(source_type: str, source_id: str) -> str:
     if source_id.startswith("CELLXGENE:"):
         return "https://cellxgene.cziscience.com/"
     return ""
+
+
+@st.cache_data(show_spinner=False)
+def _load_genelab(path: str) -> pd.DataFrame:
+    frame = pd.read_csv(path)
+    for column in ("mission_group", "muscle_type", "glds_accession", "osdr_url"):
+        frame[column] = frame[column].fillna("").astype(str)
+    return frame
 
 
 @st.cache_data(show_spinner=False)
@@ -214,6 +223,96 @@ def _country_map(df: pd.DataFrame) -> None:
     st.plotly_chart(fig, use_container_width=True)
 
 
+def _spaceflight_tab() -> None:
+    st.subheader("🚀 太空失重 / 后肢悬吊肌肉数据")
+    st.caption("NASA OSDR / GeneLab · 仅 OSD 元信息 · spaceflight 统一映射为 disuse")
+    if not GENELAB_PATH.is_file():
+        st.info("GeneLab 专项数据尚未同步。")
+        return
+    data = _load_genelab(str(GENELAB_PATH))
+    if data.empty:
+        st.info("GeneLab 专项数据为空。")
+        return
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("OSD 数据集", f"{len(data)}")
+    c2.metric("ISS / 空间站", f"{int((data['mission_group'] == 'ISS').sum())}")
+    c3.metric("地面 HLS", f"{int((data['mission_group'] == 'Ground / HLS').sum())}")
+    c4.metric("BION-M1 / 卫星", f"{int((data['mission_group'] == 'Satellite / BION-M1').sum())}")
+
+    counts = (
+        data.groupby(["mission_group", "muscle_type"])
+        .size()
+        .reset_index(name="n")
+    )
+    left, right = st.columns(2)
+    with left:
+        fig = px.bar(
+            counts,
+            x="mission_group",
+            y="n",
+            color="muscle_type",
+            barmode="group",
+            title="实验平台 × 肌肉类型",
+            color_discrete_sequence=px.colors.qualitative.Set2,
+        )
+        fig.update_layout(
+            height=420,
+            margin=dict(t=55, b=40, l=10, r=10),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(255,255,255,.35)",
+            font=dict(color="#0b2a45"),
+            xaxis_title="",
+            yaxis_title="OSD 数",
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    with right:
+        fig = px.treemap(
+            counts,
+            path=["mission_group", "muscle_type"],
+            values="n",
+            title="太空肌肉研究结构",
+            color="n",
+            color_continuous_scale="Blues",
+        )
+        fig.update_layout(
+            height=420,
+            margin=dict(t=55, b=10, l=10, r=10),
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#0b2a45"),
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    table = data[
+        [
+            "osd_id", "glds_accession", "title", "mission_group",
+            "muscle_type", "project_type", "relevance_score", "osdr_url",
+        ]
+    ].rename(
+        columns={
+            "osd_id": "OSD",
+            "glds_accession": "GLDS",
+            "title": "标题",
+            "mission_group": "平台",
+            "muscle_type": "肌肉",
+            "project_type": "研究类型",
+            "relevance_score": "相关性",
+            "osdr_url": "OSDR",
+        }
+    )
+    st.dataframe(
+        table,
+        use_container_width=True,
+        hide_index=True,
+        height=430,
+        column_config={"OSDR": st.column_config.LinkColumn("OSDR", display_text="打开")},
+    )
+    st.caption(
+        "Ground / HLS = 地面后肢悬吊/卸载模型；ISS = 国际空间站；"
+        "BION-M1 为俄罗斯生物卫星。空间站条目只作为 disuse 对照，不代表肿瘤恶病质。"
+    )
+
+
 def render_evidence() -> None:
     if not DATA_PATH.is_file():
         st.error(f"找不到证据数据：`{DATA_PATH}`")
@@ -265,7 +364,9 @@ def render_evidence() -> None:
     c3.metric("国家/地区", f"{len(set(_tokens(filtered['country'])))}")
     c4.metric("MMUT 命中", f"{int(filtered['target_gene'].str.contains('MMUT', case=False, na=False).sum())}")
 
-    tab1, tab2, tab3 = st.tabs(["📋 证据列表", "🌍 全景图", "🧪 数据质量"])
+    tab1, tab2, tab3, tab4 = st.tabs(
+        ["📋 证据列表", "🌍 全景图", "🧪 数据质量", "🚀 太空失重"]
+    )
     with tab1:
         view = filtered[
             [
@@ -343,3 +444,5 @@ def render_evidence() -> None:
             f"当前快照包含 {len(evidence)} 条证据，来源包括 GEO / CELLxGENE / "
             "PubMed / ClinicalTrials.gov / NASA GeneLab。MMUT 直接证据为 0，已预留筛选。"
         )
+    with tab4:
+        _spaceflight_tab()
