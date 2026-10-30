@@ -143,11 +143,17 @@ hr { border-color: var(--line); }
     unsafe_allow_html=True,
 )
 
-st.title("🧬 肌因猎手 | GeneHunter")
-st.markdown(
-    "多物种肌肉疾病数据图谱 · **Multi-species Muscle Disease Atlas**  \n"
-    "从 scBaseCount 云端目录到人类骨骼肌疾病样本"
-)
+header_left, header_right = st.columns([4.2, 1.1])
+with header_left:
+    st.title("🧬 肌因猎手 | GeneHunter")
+    st.markdown(
+        "多物种肌肉疾病数据图谱 · **Multi-species Muscle Disease Atlas**  \n"
+        "从 scBaseCount 云端目录到人类骨骼肌疾病样本"
+    )
+with header_right:
+    if st.button("🧪 证据库", type="primary", use_container_width=True):
+        st.switch_page("pages/2_Evidence_Library.py")
+    st.caption("144 条证据")
 
 # ================= 2. 数据加载 =================
 DB_PATH = "muscle_research.db"
