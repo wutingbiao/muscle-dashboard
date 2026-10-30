@@ -16,6 +16,7 @@ import streamlit.components.v1 as components
 
 from .data import load_catalog
 from .ai_assistant import render_ai_assistant
+from .timeline import render_timeline
 
 ACCENT = "#2A9D8F"
 PALETTE = ["#2A9D8F", "#E76F51", "#457B9D", "#E9C46A", "#8E7DBE", "#6A994E"]
@@ -639,11 +640,12 @@ def render_section() -> None:
     with st.container(border=True):
         render_ai_assistant()
 
-    tab1, tab2, tab3, tab4 = st.tabs(
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(
         [
             f"🔎 肌肉萎缩 ({len(atrophy)})",
             f"🧬 骨骼肌疾病 ({len(core)})",
             f"💪 全部肌肉 ({len(all_muscle)})",
+            "⏳ 数据时空漫游",
             "📖 说明",
         ]
     )
@@ -654,6 +656,8 @@ def render_section() -> None:
     with tab3:
         _all_tab(all_muscle)
     with tab4:
+        render_timeline(core)
+    with tab5:
         _about_tab(summary)
 
     st.warning(
