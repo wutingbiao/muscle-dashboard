@@ -48,6 +48,8 @@ def _source_url(source_type: str, source_id: str) -> str:
         return f"https://clinicaltrials.gov/study/{source_id}"
     if source_type == "geo" and source_id.startswith("GSE"):
         return f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={source_id}"
+    if source_type == "genelab":
+        return f"https://osdr.nasa.gov/bio/repo/data/studies/{source_id}"
     if source_id.startswith("CELLXGENE:"):
         return "https://cellxgene.cziscience.com/"
     return ""
@@ -218,7 +220,7 @@ def render_evidence() -> None:
         return
     evidence = _load(str(DATA_PATH))
     st.title("🧪 肌因猎手 · 证据库")
-    st.caption("144 条公开证据 · DeepSeek 结构化标注 · 只读数据快照")
+    st.caption(f"{len(evidence)} 条公开证据 · DeepSeek 结构化标注 · 只读数据快照")
 
     sources = sorted(evidence["source_name"].dropna().unique())
     subtypes = sorted(evidence["atrophy_subtype"].dropna().unique())
@@ -338,6 +340,6 @@ def render_evidence() -> None:
         b.metric("缺靶点", f"{int((filtered['target_gene'] == '').sum())} 条")
         c.metric("已人工复核", f"{int(filtered['human_reviewed'].sum())} 条")
         st.caption(
-            "当前快照来自 168 条候选，144 条通过 relevance_score >= 3。"
-            "MMUT 直接证据为 0，已预留筛选。"
+            f"当前快照包含 {len(evidence)} 条证据，来源包括 GEO / CELLxGENE / "
+            "PubMed / ClinicalTrials.gov / NASA GeneLab。MMUT 直接证据为 0，已预留筛选。"
         )
