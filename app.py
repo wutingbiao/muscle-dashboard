@@ -64,6 +64,8 @@ hr { border-color: var(--line); }
 .stTabs [data-baseweb="tab-list"] {
     gap: 8px;
     border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+    overflow: visible;
 }
 .stTabs [data-baseweb="tab"] {
     background: #ffffff;

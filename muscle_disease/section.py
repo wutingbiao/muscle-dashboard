@@ -640,15 +640,21 @@ def render_section() -> None:
     with st.container(border=True):
         render_ai_assistant()
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(
-        [
-            f"🔎 肌肉萎缩 ({len(atrophy)})",
-            f"🧬 骨骼肌疾病 ({len(core)})",
-            f"💪 全部肌肉 ({len(all_muscle)})",
-            "⏳ 数据时空漫游",
-            "📖 说明",
-        ]
-    )
+    tab_labels = [
+        f"🔎 肌肉萎缩 ({len(atrophy)})",
+        f"🧬 骨骼肌疾病 ({len(core)})",
+        f"💪 全部肌肉 ({len(all_muscle)})",
+        "⏳ 数据时空漫游",
+        "📖 说明",
+    ]
+    try:
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(
+            tab_labels,
+            default="⏳ 数据时空漫游",
+        )
+    except TypeError:
+        # Older Streamlit versions do not support ``default``.
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(tab_labels)
     with tab1:
         _atrophy_tab(atrophy, summary)
     with tab2:
