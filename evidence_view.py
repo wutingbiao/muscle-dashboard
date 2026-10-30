@@ -12,6 +12,45 @@ import streamlit as st
 BASE = Path(__file__).resolve().parent
 DATA_PATH = BASE / "evidence_data" / "evidence.csv"
 COLORS = ["#0f766e", "#0e7490", "#7c3aed", "#dc2626", "#ea580c", "#64748b"]
+GENE_ALIASES = {
+    "MURF1": "TRIM63",
+    "ATROGIN1": "FBXO32",
+    "ATROGIN-1": "FBXO32",
+    "GDF-15": "GDF15",
+    "IL-6": "IL6",
+    "MYOSTATIN": "MSTN",
+}
+COUNTRY_ALIASES = {
+    "USA": "United States",
+    "US": "United States",
+    "U.S.": "United States",
+    "UK": "United Kingdom",
+    "U.K.": "United Kingdom",
+    "Korea": "South Korea",
+}
+
+
+def _normalize_multi(value: str, mapping: dict[str, str]) -> str:
+    items = []
+    for item in str(value or "").split("|"):
+        if not item:
+            continue
+        normalized = mapping.get(item, mapping.get(item.upper(), item))
+        if normalized not in items:
+            items.append(normalized)
+    return "|".join(items)
+
+
+def _source_url(source_type: str, source_id: str) -> str:
+    if source_type == "pubmed":
+        return f"https://pubmed.ncbi.nlm.nih.gov/{source_id}/"
+    if source_type == "trial":
+        return f"https://clinicaltrials.gov/study/{source_id}"
+    if source_type == "geo" and source_id.startswith("GSE"):
+        return f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={source_id}"
+    if source_id.startswith("CELLXGENE:"):
+        return "https://cellxgene.cziscience.com/"
+    return ""
 
 
 @st.cache_data(show_spinner=False)
@@ -19,6 +58,12 @@ def _load(path: str) -> pd.DataFrame:
     frame = pd.read_csv(path)
     for column in ("country", "target_gene", "species", "intervention_type"):
         frame[column] = frame[column].fillna("").astype(str)
+    frame["target_gene"] = frame["target_gene"].map(lambda value: _normalize_multi(value, GENE_ALIASES))
+    frame["country"] = frame["country"].map(lambda value: _normalize_multi(value, COUNTRY_ALIASES))
+    frame["source_url"] = [
+        _source_url(source_type, source_id)
+        for source_type, source_id in zip(frame["source_type"], frame["source_id"])
+    ]
     frame["human_reviewed"] = frame["human_reviewed"].fillna(0).astype(int)
     return frame
 
@@ -141,6 +186,32 @@ def _gene_country(df: pd.DataFrame) -> None:
     st.plotly_chart(fig, use_container_width=True)
 
 
+def _country_map(df: pd.DataFrame) -> None:
+    counts = pd.Series(_tokens(df["country"])).value_counts().reset_index()
+    counts.columns = ["country", "n"]
+    if counts.empty:
+        st.info("当前筛选没有国家注释。")
+        return
+    fig = px.choropleth(
+        counts,
+        locations="country",
+        locationmode="country names",
+        color="n",
+        hover_name="country",
+        color_continuous_scale="Blues",
+        projection="natural earth",
+        title="证据国家/地区分布",
+    )
+    fig.update_layout(
+        height=420,
+        margin=dict(t=50, b=10, l=10, r=10),
+        paper_bgcolor="rgba(0,0,0,0)",
+        geo=dict(bgcolor="rgba(0,0,0,0)", showframe=False),
+        font=dict(color="#0b2a45"),
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+
 def render_evidence() -> None:
     if not DATA_PATH.is_file():
         st.error(f"找不到证据数据：`{DATA_PATH}`")
@@ -198,7 +269,7 @@ def render_evidence() -> None:
             [
                 "source_type", "source_id", "title", "atrophy_subtype",
                 "study_type", "country", "target_gene", "relevance_score",
-                "brief_note",
+                "brief_note", "source_url",
             ]
         ].rename(
             columns={
@@ -211,15 +282,43 @@ def render_evidence() -> None:
                 "target_gene": "靶点",
                 "relevance_score": "相关性",
                 "brief_note": "简要结论",
+                "source_url": "原始来源",
             }
         )
-        st.dataframe(view, use_container_width=True, hide_index=True, height=540)
+        st.dataframe(
+            view,
+            use_container_width=True,
+            hide_index=True,
+            height=540,
+            column_config={
+                "原始来源": st.column_config.LinkColumn("原始来源", display_text="打开"),
+            },
+        )
         st.download_button(
             "⬇️ 导出当前筛选 CSV",
             data=filtered.to_csv(index=False).encode("utf-8-sig"),
             file_name="filtered_evidence.csv",
             mime="text/csv",
         )
+        if not filtered.empty:
+            selected_id = st.selectbox(
+                "查看单条证据详情",
+                filtered["source_id"].tolist(),
+                key="evidence_detail_id",
+            )
+            row = filtered.loc[filtered["source_id"].eq(selected_id)].iloc[0]
+            st.markdown(f"### {row['title']}")
+            st.write(
+                f"**来源：** {row['source_name']} · `{row['source_id']}`  \n"
+                f"**萎缩亚型：** {row['atrophy_subtype']}  \n"
+                f"**研究类型：** {row['study_type']}  \n"
+                f"**国家：** {row['country'] or '未标注'}  \n"
+                f"**靶点：** {row['target_gene'] or '未标注'}  \n"
+                f"**相关性：** {row['relevance_score']} / 5"
+            )
+            st.info(row["brief_note"] or "暂无简要结论")
+            if row["source_url"]:
+                st.link_button("🔗 打开原始来源", row["source_url"])
     with tab2:
         left, right = st.columns(2)
         with left:
@@ -231,6 +330,7 @@ def render_evidence() -> None:
             _bar(filtered, "country", "国家/地区 Top 15", "#0e7490")
         with right:
             _bar(filtered, "target_gene", "靶点 Top 15", "#7c3aed")
+        _country_map(filtered)
         _gene_country(filtered)
     with tab3:
         a, b, c = st.columns(3)
