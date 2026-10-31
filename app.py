@@ -143,10 +143,15 @@ hr { border-color: var(--line); }
     unsafe_allow_html=True,
 )
 
+view_default = (
+    "🧪 证据库"
+    if st.query_params.get("view") == "evidence"
+    else "🧬 肌肉样本目录"
+)
 view = st.segmented_control(
     "页面视图",
     ["🧬 肌肉样本目录", "🧪 证据库"],
-    default="🧬 肌肉样本目录",
+    default=view_default,
     label_visibility="collapsed",
     key="top_level_view",
     width="content",
