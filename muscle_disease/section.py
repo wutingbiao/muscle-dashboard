@@ -670,3 +670,53 @@ def render_section() -> None:
         "这些链接指向云端原始 h5ad。下载会消耗你的网络流量/云流量，"
         "请按表中的文件大小逐个下载；不要批量拉取整个目录。"
     )
+
+
+def render_catalog() -> None:
+    """Focused sample-catalog view: metrics plus the three sample tables."""
+    all_muscle, skeletal, atrophy, core, summary = load_catalog()
+    st.title("🧬 人类肌肉样本目录")
+    st.caption("只保存样本编号、疾病注释和云端取件链接，不下载 h5ad。")
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("肌肉相关样本", f"{summary['all_muscle_samples']:,} 条")
+    col2.metric("骨骼肌样本", f"{summary['skeletal_samples']:,} 条")
+    col3.metric("萎缩/肌营养不良", f"{summary['atrophy_related_samples']:,} 条")
+    col4.metric("骨骼肌疾病", f"{summary['skeletal_disease_samples']:,} 条")
+    st.caption(
+        "骨骼肌疾病目录合计约 "
+        f"{summary.get('core_total_size_mb', 0):,.1f} MB；"
+        "先看大小，再决定下载哪一个。"
+    )
+
+    tab1, tab2, tab3 = st.tabs(
+        [
+            f"🔎 肌肉萎缩 ({len(atrophy)})",
+            f"🧬 骨骼肌疾病 ({len(core)})",
+            f"💪 全部肌肉 ({len(all_muscle)})",
+        ]
+    )
+    with tab1:
+        _atrophy_tab(atrophy, summary)
+    with tab2:
+        _core_tab(core, summary)
+    with tab3:
+        _all_tab(all_muscle)
+
+    st.warning(
+        "这些链接指向云端原始 h5ad。下载会消耗你的网络流量/云流量，"
+        "请按表中的文件大小逐个下载；不要批量拉取整个目录。"
+    )
+
+
+def render_catalog_extras() -> None:
+    """AI assistant, timeline and background notes moved out of the catalog main screen."""
+    all_muscle, skeletal, atrophy, core, summary = load_catalog()
+    with st.container(border=True):
+        render_ai_assistant()
+    st.divider()
+    st.subheader("⏳ 数据时空漫游")
+    render_timeline(core)
+    st.divider()
+    st.subheader("📖 说明")
+    _about_tab(summary)
