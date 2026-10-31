@@ -177,7 +177,7 @@ if view == "🛠 分析工具":
     render_tools()
     st.stop()
 if view == "🧪 证据库":
-    from evidence_library import render_evidence
+    from evidence_library_v2 import render_evidence
 
     render_evidence()
     st.stop()
