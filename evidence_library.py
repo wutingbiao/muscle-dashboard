@@ -325,14 +325,15 @@ def render_evidence() -> None:
     subtypes = sorted(evidence["atrophy_subtype"].dropna().unique())
     countries = sorted(set(_tokens(evidence["country"])))
 
-    with st.sidebar:
-        st.header("🔎 证据筛选")
-        selected_sources = st.multiselect("来源", sources, default=sources)
-        selected_subtypes = st.multiselect("萎缩亚型", subtypes, default=subtypes)
-        selected_countries = st.multiselect("国家/地区", countries, default=[])
-        min_score = st.slider("最低相关性", 3, 5, 3)
-        query = st.text_input("搜索标题 / 摘要 / 编号")
-        mmut_only = st.checkbox("只看 MMUT 相关（当前为 0）", value=False)
+    with st.container(border=True):
+        f1, f2, f3 = st.columns([1.2, 1.2, 1.2])
+        selected_sources = f1.multiselect("来源", sources, default=sources)
+        selected_subtypes = f2.multiselect("萎缩亚型", subtypes, default=subtypes)
+        selected_countries = f3.multiselect("国家/地区", countries, default=[])
+        f4, f5 = st.columns([1, 2])
+        min_score = f4.slider("最低相关性", 3, 5, 3)
+        query = f5.text_input("搜索标题 / 摘要 / 编号")
+        mmut_only = f5.checkbox("只看 MMUT 相关（当前为 0）", value=False)
 
     filtered = evidence[
         evidence["source_name"].isin(selected_sources)
@@ -364,15 +365,14 @@ def render_evidence() -> None:
     c3.metric("国家/地区", f"{len(set(_tokens(filtered['country'])))}")
     c4.metric("MMUT 命中", f"{int(filtered['target_gene'].str.contains('MMUT', case=False, na=False).sum())}")
 
-    tab1, tab2, tab3, tab4 = st.tabs(
-        ["📋 证据列表", "🌍 全景图", "🧪 数据质量", "🚀 太空失重"]
+    tab1, tab2, tab3 = st.tabs(
+        ["📋 证据检索", "🌍 全景图", "🚀 太空专项"]
     )
     with tab1:
         view = filtered[
             [
                 "source_type", "source_id", "title", "atrophy_subtype",
-                "study_type", "country", "target_gene", "relevance_score",
-                "brief_note", "source_url",
+                "country", "target_gene", "relevance_score", "source_url",
             ]
         ].rename(
             columns={
@@ -380,11 +380,9 @@ def render_evidence() -> None:
                 "source_id": "编号",
                 "title": "标题",
                 "atrophy_subtype": "萎缩亚型",
-                "study_type": "研究类型",
                 "country": "国家",
                 "target_gene": "靶点",
                 "relevance_score": "相关性",
-                "brief_note": "简要结论",
                 "source_url": "原始来源",
             }
         )
@@ -435,7 +433,7 @@ def render_evidence() -> None:
             _bar(filtered, "target_gene", "靶点 Top 15", "#7c3aed")
         _country_map(filtered)
         _gene_country(filtered)
-    with tab3:
+        st.divider()
         a, b, c = st.columns(3)
         a.metric("缺国家", f"{int((filtered['country'] == '').sum())} 条")
         b.metric("缺靶点", f"{int((filtered['target_gene'] == '').sum())} 条")
@@ -444,5 +442,5 @@ def render_evidence() -> None:
             f"当前快照包含 {len(evidence)} 条证据，来源包括 GEO / CELLxGENE / "
             "PubMed / ClinicalTrials.gov / NASA GeneLab。MMUT 直接证据为 0，已预留筛选。"
         )
-    with tab4:
+    with tab3:
         _spaceflight_tab()

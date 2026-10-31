@@ -143,14 +143,14 @@ hr { border-color: var(--line); }
     unsafe_allow_html=True,
 )
 
-view_default = (
-    "🧪 证据库"
-    if st.query_params.get("view") == "evidence"
-    else "🧬 肌肉样本目录"
-)
+view_default = "🧬 肌肉样本目录"
+if st.query_params.get("view") == "evidence":
+    view_default = "🧪 证据库"
+elif st.query_params.get("view") == "methods":
+    view_default = "⚙️ 方法与维护"
 view = st.segmented_control(
     "页面视图",
-    ["🧬 肌肉样本目录", "🧪 证据库"],
+    ["🧬 肌肉样本目录", "🧪 证据库", "⚙️ 方法与维护"],
     default=view_default,
     label_visibility="collapsed",
     key="top_level_view",
@@ -160,6 +160,11 @@ if view == "🧪 证据库":
     from evidence_library import render_evidence
 
     render_evidence()
+    st.stop()
+if view == "⚙️ 方法与维护":
+    from methods_view import render_methods
+
+    render_methods()
     st.stop()
 
 st.title("🧬 肌因猎手 | GeneHunter")
@@ -347,18 +352,3 @@ with tab4:
 st.divider()
 render_section()
 
-# ================= 8. 侧边栏修改 =================
-with st.sidebar:
-    st.header("✍️ 人工手动修正")
-    uid_to_fix = st.text_input("输入要修正的 UID")
-    new_uberon = st.text_input("输入正确的 UBERON ID")
-    
-    if st.button("提交修正"):
-        if uid_to_fix and new_uberon:
-            conn = sqlite3.connect(DB_PATH)
-            conn.execute("UPDATE geo_samples SET uberon_id = ?, needs_review = 0 WHERE uid = ?", (new_uberon, uid_to_fix))
-            conn.commit()
-            conn.close()
-            st.success(f"✅ UID {uid_to_fix} 修正成功！")
-            st.cache_data.clear()
-            st.rerun()
