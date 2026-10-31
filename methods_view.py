@@ -36,6 +36,7 @@ def render_methods() -> None:
             [
                 ("GEO", "NCBI E-utilities", "数据集元信息"),
                 ("CELLxGENE", "Discover API", "数据集/collection 元信息"),
+                ("scBaseCount", "云端样本目录", "人类肌肉样本编号/疾病注释"),
                 ("PubMed", "E-utilities", "标题、摘要、机构"),
                 ("ClinicalTrials.gov", "v2 API", "试验登记信息"),
                 ("NASA GeneLab / OSDR", "OSDR search API", "OSD/GLDS 元信息"),

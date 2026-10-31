@@ -73,7 +73,7 @@ def render_tools() -> None:
     df = _load_data(str(DB_PATH))
     all_muscle, skeletal, atrophy, core, summary = load_catalog()
 
-    tab1, tab2, tab3 = st.tabs(["📋 数据工作台", "🧪 科研小助手", "⏳ 时空漫游与说明"])
+    tab1, tab2 = st.tabs(["📋 数据工作台", "⏳ 时空漫游与说明"])
 
     with tab1:
         left, middle, right = st.columns([1, 1.4, 1])
@@ -130,12 +130,6 @@ def render_tools() -> None:
                 )
 
     with tab2:
-        with st.container(border=True):
-            render_ai_assistant()
-        with st.expander("🔬 Demo：差异表达火山图"):
-            _volcano_demo(df, "tools")
-
-    with tab3:
         st.subheader("⏳ 数据时空漫游")
         render_timeline(core)
         st.divider()

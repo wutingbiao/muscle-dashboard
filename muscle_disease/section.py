@@ -624,6 +624,10 @@ def render_section() -> None:
         "从 scBaseCount 的 **样本目录** 中筛出人类肌肉相关样本。"
         "这里只保存样本编号、疾病注释和云端取件链接，不把 h5ad 下载到服务器。"
     )
+    st.info(
+        "数据来源：scBaseCount 云端单细胞样本目录。"
+        "本页只展示样本编号、疾病注释、文件大小和取件链接，不下载 h5ad。"
+    )
 
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("肌肉相关样本", f"{summary['all_muscle_samples']:,} 条")
@@ -677,6 +681,10 @@ def render_catalog() -> None:
     all_muscle, skeletal, atrophy, core, summary = load_catalog()
     st.title("🧬 人类肌肉样本目录")
     st.caption("只保存样本编号、疾病注释和云端取件链接，不下载 h5ad。")
+    st.info(
+        "数据来源：scBaseCount 云端单细胞样本目录。"
+        "本页只读取元信息和取件链接，不下载 h5ad。"
+    )
 
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("肌肉相关样本", f"{summary['all_muscle_samples']:,} 条")

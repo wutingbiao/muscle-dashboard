@@ -9,6 +9,8 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from muscle_disease.ai_assistant import render_ai_assistant
+
 DB_PATH = Path(__file__).resolve().parent / "muscle_research.db"
 
 
@@ -146,3 +148,9 @@ def render_overview() -> None:
         )
         fig.update_layout(height=400, margin=dict(t=20, b=20))
         st.plotly_chart(fig, use_container_width=True)
+
+    st.divider()
+    st.subheader("🧪 科研小助手")
+    st.caption("用自然语言描述你要找的样本；AI 只提取筛选条件，不直接改数据。")
+    with st.container(border=True):
+        render_ai_assistant()
