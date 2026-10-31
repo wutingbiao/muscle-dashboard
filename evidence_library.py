@@ -11,7 +11,7 @@ import streamlit as st
 
 BASE = Path(__file__).resolve().parent
 DATA_PATH = BASE / "evidence_data" / "evidence.csv"
-GENELAB_PATH = BASE / "evidence_data" / "genelab_evidence.csv"
+SPACEFLIGHT_PATH = BASE / "evidence_data" / "spaceflight_31.csv"
 COLORS = ["#0f766e", "#0e7490", "#7c3aed", "#dc2626", "#ea580c", "#64748b"]
 GENE_ALIASES = {
     "MURF1": "TRIM63",
@@ -51,6 +51,8 @@ def _source_url(source_type: str, source_id: str) -> str:
         return f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={source_id}"
     if source_type == "genelab":
         return f"https://osdr.nasa.gov/bio/repo/data/studies/{source_id}"
+    if source_type == "pride":
+        return f"https://www.ebi.ac.uk/pride/archive/projects/{source_id}"
     if source_id.startswith("CELLXGENE:"):
         return "https://cellxgene.cziscience.com/"
     return ""
@@ -59,8 +61,9 @@ def _source_url(source_type: str, source_id: str) -> str:
 @st.cache_data(show_spinner=False)
 def _load_genelab(path: str) -> pd.DataFrame:
     frame = pd.read_csv(path)
-    for column in ("mission_group", "muscle_type", "glds_accession", "osdr_url"):
-        frame[column] = frame[column].fillna("").astype(str)
+    for column in ("mission_group", "muscle_type", "glds_accession", "osdr_url", "species", "data_type"):
+        if column in frame.columns:
+            frame[column] = frame[column].fillna("").astype(str)
     return frame
 
 
@@ -224,21 +227,24 @@ def _country_map(df: pd.DataFrame) -> None:
 
 
 def _spaceflight_tab() -> None:
-    st.subheader("🚀 太空失重 / 后肢悬吊肌肉数据")
-    st.caption("NASA OSDR / GeneLab · 仅 OSD 元信息 · spaceflight 统一映射为 disuse")
-    if not GENELAB_PATH.is_file():
-        st.info("GeneLab 专项数据尚未同步。")
+    st.subheader("🚀 真实太空飞行 / 空间站肌肉数据")
+    st.caption(
+        "31 条真实在轨或空间站数据：27 条小鼠 OSD + 3 条人源肌肉芯片 + 1 条航天员单纤维蛋白组。"
+        "另有 10 条地面 HLS/辐射对照未计入。"
+    )
+    if not SPACEFLIGHT_PATH.is_file():
+        st.info("太空专项数据尚未同步。")
         return
-    data = _load_genelab(str(GENELAB_PATH))
+    data = _load_genelab(str(SPACEFLIGHT_PATH))
     if data.empty:
-        st.info("GeneLab 专项数据为空。")
+        st.info("太空专项数据为空。")
         return
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("OSD 数据集", f"{len(data)}")
+    c1.metric("真实在轨数据", f"{len(data)}")
     c2.metric("ISS / 空间站", f"{int((data['mission_group'] == 'ISS').sum())}")
-    c3.metric("地面 HLS", f"{int((data['mission_group'] == 'Ground / HLS').sum())}")
-    c4.metric("BION-M1 / 卫星", f"{int((data['mission_group'] == 'Satellite / BION-M1').sum())}")
+    c3.metric("BION-M1", f"{int((data['mission_group'] == 'BION-M1').sum())}")
+    c4.metric("人源模型", f"{int((data['species'] == 'human').sum())}")
 
     counts = (
         data.groupby(["mission_group", "muscle_type"])
@@ -253,7 +259,7 @@ def _spaceflight_tab() -> None:
             y="n",
             color="muscle_type",
             barmode="group",
-            title="实验平台 × 肌肉类型",
+            title="实验平台 × 肌肉/模型类型",
             color_discrete_sequence=px.colors.qualitative.Set2,
         )
         fig.update_layout(
@@ -263,7 +269,7 @@ def _spaceflight_tab() -> None:
             plot_bgcolor="rgba(255,255,255,.35)",
             font=dict(color="#0b2a45"),
             xaxis_title="",
-            yaxis_title="OSD 数",
+            yaxis_title="数据集数",
         )
         st.plotly_chart(fig, use_container_width=True)
     with right:
@@ -271,7 +277,7 @@ def _spaceflight_tab() -> None:
             counts,
             path=["mission_group", "muscle_type"],
             values="n",
-            title="太空肌肉研究结构",
+            title="真实太空肌肉研究结构",
             color="n",
             color_continuous_scale="Blues",
         )
@@ -286,30 +292,34 @@ def _spaceflight_tab() -> None:
     table = data[
         [
             "osd_id", "glds_accession", "title", "mission_group",
-            "muscle_type", "project_type", "relevance_score", "osdr_url",
+            "species", "data_type", "muscle_type", "relevance_score", "osdr_url",
         ]
     ].rename(
         columns={
-            "osd_id": "OSD",
-            "glds_accession": "GLDS",
+            "osd_id": "编号",
+            "glds_accession": "GLDS/GEO",
             "title": "标题",
             "mission_group": "平台",
-            "muscle_type": "肌肉",
-            "project_type": "研究类型",
+            "species": "物种",
+            "data_type": "数据类型",
+            "muscle_type": "肌肉/模型",
             "relevance_score": "相关性",
-            "osdr_url": "OSDR",
+            "osdr_url": "原始来源",
         }
     )
     st.dataframe(
         table,
         use_container_width=True,
         hide_index=True,
-        height=430,
-        column_config={"OSDR": st.column_config.LinkColumn("OSDR", display_text="打开")},
+        height=460,
+        column_config={
+            "原始来源": st.column_config.LinkColumn("原始来源", display_text="打开"),
+        },
     )
     st.caption(
-        "Ground / HLS = 地面后肢悬吊/卸载模型；ISS = 国际空间站；"
-        "BION-M1 为俄罗斯生物卫星。空间站条目只作为 disuse 对照，不代表肿瘤恶病质。"
+        "人源芯片：OSD-684（CRS-21）、OSD-781（Cardinal Muscle）、OSD-937（SpaceX-25）。"
+        "航天员蛋白组：PRIDE PXD028435。真实飞行数据仍以小鼠模型为主，"
+        "不能直接外推为人类肿瘤恶病质结论。"
     )
 
 
