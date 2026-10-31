@@ -143,12 +143,13 @@ hr { border-color: var(--line); }
     unsafe_allow_html=True,
 )
 
-view = st.radio(
+view = st.segmented_control(
     "页面视图",
     ["🧬 肌肉样本目录", "🧪 证据库"],
-    horizontal=True,
+    default="🧬 肌肉样本目录",
     label_visibility="collapsed",
     key="top_level_view",
+    width="content",
 )
 if view == "🧪 证据库":
     from evidence_view import render_evidence
