@@ -25,8 +25,11 @@ def _load_geo(path: str) -> pd.DataFrame:
 
 
 def _geo_workbench(df: pd.DataFrame) -> None:
-    st.subheader("🗂 GEO 解析样本")
-    st.caption("3,593 条样本级记录；不是 185 条数据集级证据。")
+    st.subheader("🗂 GEO 数据集")
+    st.caption(
+        "3,593 个 GEO 数据集（series）；表中 uid 即 series UID，GSE = uid − 200000000。"
+        "每个数据集内的样本数另计，不是 185 条证据。"
+    )
     left, middle, right = st.columns([1, 1.4, 1])
     with left:
         species = st.selectbox("物种", df["species"].unique(), key="catalog_species")
@@ -83,9 +86,10 @@ def _geo_workbench(df: pd.DataFrame) -> None:
 
 def render_data_catalog() -> None:
     st.title("🗂 数据目录")
-    st.caption("样本级目录：GEO 3,593 条 + scBaseCount 人类肌肉 540 条。")
+    st.caption("目录：GEO 3,593 个数据集（series）+ scBaseCount 人类肌肉 540 条样本。")
     st.info(
-        "这里放的是样本级 / 数据集目录，不是 185 条证据。"
+        "这里放的是数据集目录（GEO，每个 series 内含多个样本）与样本目录（scBaseCount），"
+        "不是 185 条证据。"
         "证据库在另一个顶层入口。"
     )
     if not DB_PATH.is_file():
@@ -94,7 +98,7 @@ def render_data_catalog() -> None:
     df = _load_geo(str(DB_PATH))
     all_muscle, skeletal, atrophy, core, summary = load_catalog()
 
-    tab1, tab2, tab3 = st.tabs(["🗂 GEO 样本", "🧬 人类肌肉目录", "⏳ 时空漫游"])
+    tab1, tab2, tab3 = st.tabs(["🗂 GEO 数据集", "🧬 人类肌肉目录", "⏳ 时空漫游"])
     with tab1:
         _geo_workbench(df)
     with tab2:

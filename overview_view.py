@@ -27,7 +27,7 @@ def render_overview() -> None:
     st.title("🧬 肌因猎手 | GeneHunter")
     st.markdown(
         "多物种肌肉疾病数据图谱 · **Multi-species Muscle Disease Atlas**  \n"
-        "先看全局，再进入样本目录或证据库。"
+        "先看全局，再进入数据集目录或证据库。"
     )
     if not DB_PATH.is_file():
         st.error(f"找不到数据库：`{DB_PATH}`")
@@ -35,7 +35,7 @@ def render_overview() -> None:
     df = _load_data(str(DB_PATH))
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("总解析样本数", f"{len(df):,} 条")
+    c1.metric("GEO 数据集数", f"{len(df):,} 个")
     c2.metric("成功匹配 UBERON", f"{len(df[df['uberon_id'] != 'unknown']):,} 条")
     c3.metric("需人工复核", f"{len(df[df['needs_review'] == 1]):,} 条")
     c4.metric("涵盖物种", f"{df['species'].nunique()} 个")

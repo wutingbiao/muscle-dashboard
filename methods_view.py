@@ -71,12 +71,12 @@ def render_methods() -> None:
 
     st.divider()
     st.subheader("人工修正 UBERON 标注")
-    st.caption("仅用于修正 scBaseCount 样本的解剖位置；写入本地 SQLite。")
+    st.caption("仅用于修正 GEO 数据集（series）的解剖位置；写入本地 SQLite。")
     if not DB_PATH.is_file():
         st.info("当前环境没有 muscle_research.db，人工修正不可用。")
         return
     with st.form("manual_uberon_fix"):
-        uid = st.text_input("样本 UID")
+        uid = st.text_input("GEO 数据集 UID（series UID，GSE = uid − 200000000）")
         uberon = st.text_input("正确的 UBERON ID")
         submitted = st.form_submit_button("提交修正")
     if submitted:
