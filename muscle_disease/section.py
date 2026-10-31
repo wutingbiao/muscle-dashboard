@@ -676,10 +676,13 @@ def render_section() -> None:
     )
 
 
-def render_catalog() -> None:
+def render_catalog(show_title: bool = True) -> None:
     """Focused sample-catalog view: metrics plus the three sample tables."""
     all_muscle, skeletal, atrophy, core, summary = load_catalog()
-    st.title("🧬 人类肌肉样本目录")
+    if show_title:
+        st.title("🧬 人类肌肉样本目录")
+    else:
+        st.subheader("🧬 scBaseCount 人类肌肉样本")
     st.caption("只保存样本编号、疾病注释和云端取件链接，不下载 h5ad。")
     st.info(
         "数据来源：scBaseCount 云端单细胞样本目录。"

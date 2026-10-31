@@ -148,13 +148,11 @@ if st.query_params.get("view") == "evidence":
     view_default = "🧪 证据库"
 elif st.query_params.get("view") == "methods":
     view_default = "⚙️ 方法与维护"
-elif st.query_params.get("view") == "catalog":
-    view_default = "🧬 样本目录"
-elif st.query_params.get("view") == "tools":
-    view_default = "🛠 分析工具"
+elif st.query_params.get("view") in {"catalog", "tools"}:
+    view_default = "🗂 数据目录"
 view = st.segmented_control(
     "页面视图",
-    ["📊 概览", "🧬 样本目录", "🛠 分析工具", "🧪 证据库", "⚙️ 方法与维护"],
+    ["📊 概览", "🗂 数据目录", "🧪 证据库", "⚙️ 方法与维护"],
     default=view_default,
     label_visibility="collapsed",
     key="top_level_view",
@@ -166,15 +164,10 @@ if view == "📊 概览":
 
     render_overview()
     st.stop()
-if view == "🧬 样本目录":
-    from muscle_disease.section import render_catalog
+if view == "🗂 数据目录":
+    from data_catalog_view import render_data_catalog
 
-    render_catalog()
-    st.stop()
-if view == "🛠 分析工具":
-    from tools_view import render_tools
-
-    render_tools()
+    render_data_catalog()
     st.stop()
 if view == "🧪 证据库":
     from evidence_library_v3 import render_evidence
