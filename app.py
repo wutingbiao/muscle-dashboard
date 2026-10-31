@@ -152,7 +152,7 @@ view = st.segmented_control(
     width="content",
 )
 if view == "🧪 证据库":
-    from evidence_view import render_evidence
+    from evidence_library import render_evidence
 
     render_evidence()
     st.stop()
