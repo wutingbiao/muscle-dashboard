@@ -5,15 +5,27 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
 import time
+from pathlib import Path
 from muscle_disease.section import render_section
 
 pio.templates.default = "plotly_white"
 
 # ================= 1. 页面基础设置 =================
+# 自定义图标：草绿 + 海蓝相交的双螺旋（assets/logo.png），失败时回退到 emoji
+_LOGO = Path(__file__).parent / "assets" / "logo.png"
+_ICON: object = "🧬"
+if _LOGO.is_file():
+    try:
+        from PIL import Image
+
+        _ICON = Image.open(_LOGO)
+    except Exception:  # noqa: BLE001
+        _ICON = "🧬"
+
 st.set_page_config(
-    page_title="肌因猎手 | GeneHunter · 肌肉疾病图谱", 
-    layout="wide", 
-    page_icon="🧬"
+    page_title="肌因猎手 | GeneHunter · 肌肉疾病图谱",
+    layout="wide",
+    page_icon=_ICON,
 )
 
 st.markdown(
@@ -146,7 +158,7 @@ hr { border-color: var(--line); }
 view_default = "📊 总览"
 _qp = st.query_params.get("view")
 if _qp in {"data", "catalog", "tools"}:
-    view_default = "🗂 数据"
+    view_default = "📁 数据"
 elif _qp in {"evidence"}:
     view_default = "🧪 证据"
 elif _qp in {"atlas"}:
@@ -155,7 +167,7 @@ elif _qp in {"method", "methods"}:
     view_default = "⚙️ 方法"
 view = st.segmented_control(
     "页面视图",
-    ["📊 总览", "🗂 数据", "🧪 证据", "📈 图谱", "⚙️ 方法"],
+    ["📊 总览", "📁 数据", "🧪 证据", "📈 图谱", "⚙️ 方法"],
     default=view_default,
     label_visibility="collapsed",
     key="top_level_view",
@@ -167,7 +179,7 @@ if view == "📊 总览":
 
     render_overview()
     st.stop()
-if view == "🗂 数据":
+if view == "📁 数据":
     from data_catalog_view import render_data_catalog
 
     render_data_catalog()

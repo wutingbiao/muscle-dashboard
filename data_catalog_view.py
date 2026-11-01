@@ -25,7 +25,7 @@ def _load_geo(path: str) -> pd.DataFrame:
 
 
 def _geo_workbench(df: pd.DataFrame) -> None:
-    st.subheader("🗂 GEO 数据集")
+    st.subheader("📁 GEO 数据集")
     st.caption(
         "3,593 个 GEO 数据集（series）；表中 uid 即 series UID，GSE = uid − 200000000。"
         "每个数据集内的样本数另计，不是 185 条证据。"
@@ -85,7 +85,7 @@ def _geo_workbench(df: pd.DataFrame) -> None:
 
 
 def render_data_catalog() -> None:
-    st.title("🗂 数据")
+    st.title("📁 数据")
     st.caption("本页回答：有哪些公开数据集可用？GEO 3,593 个 series · scBaseCount 540 条人类肌肉样本")
     st.info(
         "四个页签依次是：GEO 数据集（数据集级目录）、人类肌肉目录（样本级）、"
@@ -98,7 +98,7 @@ def render_data_catalog() -> None:
     df = _load_geo(str(DB_PATH))
     all_muscle, skeletal, atrophy, core, summary = load_catalog()
 
-    tab1, tab2, tab3, tab4 = st.tabs(["🗂 GEO 数据集", "🧬 人类肌肉目录", "📊 分布", "⏳ 时空漫游"])
+    tab1, tab2, tab3, tab4 = st.tabs(["📁 GEO 数据集", "🧬 人类肌肉目录", "📊 分布", "⏳ 时空漫游"])
     with tab1:
         _geo_workbench(df)
     with tab2:
@@ -111,3 +111,11 @@ def render_data_catalog() -> None:
         st.subheader("⏳ 数据时空漫游")
         st.caption("Mock 年份分配的演示视图，不代表真实时间分布。")
         render_timeline(core)
+
+    st.divider()
+    st.caption(
+        "相关页面："
+        "[🧪 证据](?view=evidence) · "
+        "[📈 图谱](?view=atlas) · "
+        "[⚙️ 方法](?view=method)"
+    )

@@ -179,3 +179,9 @@ def render_atlas() -> None:
     _species_share()
     st.divider()
     _downloads()
+    st.caption(
+        "相关页面："
+        "[📁 数据](?view=data) · "
+        "[🧪 证据](?view=evidence) · "
+        "[⚙️ 方法](?view=method)（数据来源与统计口径）"
+    )
