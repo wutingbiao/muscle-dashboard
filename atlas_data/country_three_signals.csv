@@ -1,0 +1,210 @@
+﻿country,literature_author,literature_corresponding,trial_site
+United States,12630,3034,1907
+China,4235,1778,373
+Japan,3402,824,67
+United Kingdom,3092,661,501
+Italy,2656,857,374
+Canada,2338,524,398
+France,2089,433,554
+Germany,1945,443,285
+Australia,1710,392,128
+Brazil,1595,272,181
+South Korea,1464,618,162
+Netherlands,1079,273,284
+Spain,1062,263,393
+Denmark,885,212,310
+Sweden,875,151,102
+Switzerland,685,144,121
+Belgium,591,150,211
+India,548,133,72
+Poland,445,156,114
+Taiwan,376,134,278
+Russia,361,116,50
+Finland,337,34,26
+Turkey,325,109,0
+Israel,314,41,80
+Austria,287,70,69
+Norway,250,47,84
+Chile,249,77,58
+Portugal,229,61,40
+Singapore,218,59,52
+Iran,211,58,13
+Greece,199,47,54
+Ireland,189,57,46
+New Zealand,179,21,25
+Mexico,137,32,66
+Egypt,129,32,101
+Saudi Arabia,121,15,12
+Hong Kong,120,83,54
+Hungary,119,45,33
+Slovenia,117,33,32
+Thailand,111,32,39
+Czech Republic,105,26,0
+South Africa,77,20,12
+Argentina,77,16,27
+Malaysia,76,28,26
+United Arab Emirates,69,23,4
+Pakistan,62,5,72
+Colombia,60,8,15
+Indonesia,60,16,35
+Lithuania,56,10,7
+Qatar,44,15,3
+US,44,0,0
+Serbia,41,10,25
+Romania,40,25,21
+Croatia,33,3,9
+Lebanon,31,2,3
+Jordan,25,5,8
+Ukraine,24,8,8
+Estonia,22,2,3
+Tunisia,20,3,6
+Vietnam,18,4,35
+PR,15,6,0
+Nigeria,15,3,6
+Macao,14,8,0
+Philippines,14,3,4
+Bangladesh,13,2,21
+Morocco,13,3,1
+Cyprus,12,6,8
+Latvia,12,0,4
+Luxembourg,11,0,0
+Bulgaria,11,4,18
+JP,10,0,0
+DE,10,0,0
+CN,9,0,0
+Belarus,9,3,3
+BR,9,0,0
+Slovakia,9,6,14
+CA,8,0,0
+Kuwait,8,2,3
+Iraq,8,2,4
+Iceland,8,4,1
+Uruguay,8,0,1
+AU,7,0,0
+Peru,6,0,4
+IT,6,0,0
+IN,6,0,0
+Malta,6,3,0
+MX,5,0,0
+Costa Rica,5,2,1
+GB,5,0,0
+Kenya,5,4,17
+Uganda,5,1,11
+Algeria,4,1,0
+Bahrain,4,2,1
+Ecuador,4,3,1
+ES,4,0,0
+FR,4,0,0
+Ethiopia,4,1,15
+IR,4,0,0
+UA,3,0,0
+Zambia,3,1,4
+Mongolia,3,0,1
+Kazakhstan,3,2,2
+NL,3,0,0
+Moldova,3,1,0
+Namibia,3,0,0
+CH,3,0,0
+Albania,3,1,1
+BE,3,0,0
+GR,3,0,0
+TN,2,0,0
+UZ,2,1,0
+TW,2,0,0
+IL,2,0,0
+North Macedonia,2,0,0
+Armenia,2,0,0
+DK,2,0,0
+Cameroon,2,0,1
+FO,2,2,0
+Ghana,2,0,5
+EG,2,0,0
+AE,2,0,0
+Oman,2,1,0
+NZ,2,0,0
+PL,2,0,0
+SG,2,0,0
+RU,2,0,0
+SA,2,0,0
+Sri Lanka,2,1,2
+RE,2,0,0
+LK,2,0,0
+KR,2,0,0
+AZ,1,0,0
+Dominican Republic,1,0,0
+CL,1,0,0
+CR,1,0,0
+CO,1,0,0
+DM,1,0,0
+FI,1,0,0
+ID,1,0,0
+AR,1,0,0
+Azerbaijan,1,1,0
+BD,1,0,0
+BF,1,1,0
+BG,1,0,0
+BH,1,0,0
+YE,1,0,0
+Venezuela,1,0,3
+RS,1,0,0
+RO,1,0,0
+TR,1,0,0
+TJ,1,0,0
+TH,1,0,0
+Tanzania,1,0,10
+SD,1,0,0
+NE,1,0,0
+MC,1,0,0
+MW,1,0,0
+ML,1,0,0
+PS,1,0,0
+GM,1,0,0
+Guatemala,1,0,2
+Cuba,1,1,0
+ET,1,0,0
+HK,1,0,0
+MA,1,0,0
+LY,1,0,0
+JO,1,0,0
+JM,1,0,0
+TT,1,0,0
+ZA,1,0,0
+PT,1,0,0
+Nepal,1,0,7
+Bolivia,0,0,1
+Czechia,0,0,55
+Chad,0,0,4
+Bosnia and Herzegovina,0,0,1
+Botswana,0,0,1
+Honduras,0,0,4
+Haiti,0,0,1
+Guinea-Bissau,0,0,4
+Guadeloupe,0,0,4
+Georgia,0,0,4
+Faroe Islands,0,0,2
+El Salvador,0,0,2
+Democratic Republic of the Congo,0,0,1
+Burkina Faso,0,0,13
+Jamaica,0,0,2
+Niger,0,0,2
+Malawi,0,0,12
+Mali,0,0,7
+Kosovo,0,0,1
+Laos,0,0,1
+Liberia,0,0,1
+Paraguay,0,0,2
+Panama,0,0,1
+Sudan,0,0,1
+Sierra Leone,0,0,2
+Saint Martin,0,0,1
+Republic of the Congo,0,0,1
+Reunion,0,0,2
+Rwanda,0,0,5
+Puerto Rico,0,0,13
+Somalia,0,0,1
+Senegal,0,0,3
+Syria,0,0,3
+Turkey (Türkiye),0,0,448
+Uzbekistan,0,0,2
+Yemen,0,0,1
+Zimbabwe,0,0,1

@@ -148,11 +148,13 @@ if st.query_params.get("view") == "evidence":
     view_default = "🧪 证据库"
 elif st.query_params.get("view") == "methods":
     view_default = "⚙️ 方法与维护"
+elif st.query_params.get("view") == "atlas":
+    view_default = "📈 图谱"
 elif st.query_params.get("view") in {"catalog", "tools"}:
     view_default = "🗂 数据目录"
 view = st.segmented_control(
     "页面视图",
-    ["📊 概览", "🗂 数据目录", "🧪 证据库", "⚙️ 方法与维护"],
+    ["📊 概览", "🗂 数据目录", "🧪 证据库", "📈 图谱", "⚙️ 方法与维护"],
     default=view_default,
     label_visibility="collapsed",
     key="top_level_view",
@@ -173,6 +175,11 @@ if view == "🧪 证据库":
     from evidence_library_v3 import render_evidence
 
     render_evidence()
+    st.stop()
+if view == "📈 图谱":
+    from atlas_view import render_atlas
+
+    render_atlas()
     st.stop()
 if view == "⚙️ 方法与维护":
     from methods_view import render_methods

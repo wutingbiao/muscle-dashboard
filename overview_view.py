@@ -36,8 +36,8 @@ def render_overview() -> None:
 
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("GEO 数据集数", f"{len(df):,} 个")
-    c2.metric("成功匹配 UBERON", f"{len(df[df['uberon_id'] != 'unknown']):,} 条")
-    c3.metric("需人工复核", f"{len(df[df['needs_review'] == 1]):,} 条")
+    c2.metric("成功匹配 UBERON", f"{len(df[df['uberon_id'] != 'unknown']):,} 个")
+    c3.metric("需人工复核", f"{len(df[df['needs_review'] == 1]):,} 个")
     c4.metric("涵盖物种", f"{df['species'].nunique()} 个")
 
     st.divider()
