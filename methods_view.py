@@ -69,6 +69,38 @@ def render_methods() -> None:
 """
     )
 
+    st.subheader("图谱数据源")
+    st.caption("「📈 图谱」页用的 8 个公开源，与上面的证据库来源分开计数。")
+    st.dataframe(
+        pd.DataFrame(
+            [
+                ("NCBI GEO", "E-utilities", "7,468 个 series，249,718 个样本"),
+                ("BioStudies / ArrayExpress", "REST search", "6,000 个 study"),
+                ("CELLxGENE", "curation API", "404 个 collection（29 个含肌肉）"),
+                ("PubMed", "E-utilities", "20,847 条书目记录"),
+                ("Europe PMC", "REST search", "14,803 条"),
+                ("OpenAlex", "works API", "9,368 条（含机构国家码与通讯作者标记）"),
+                ("Crossref（SciELO / AJOL）", "works API + DOI 前缀", "1,722 条（拉美 / 非洲）"),
+                ("ClinicalTrials.gov", "v2 API", "7,547 条试验，125 个国家"),
+            ],
+            columns=["来源", "接口", "规模"],
+        ),
+        hide_index=True,
+        use_container_width=True,
+    )
+
+    st.subheader("两个关键口径")
+    st.markdown(
+        """
+- **主题标签先按检索式归属**，再用 12,000 条分层抽样做内容校准：两者一致率仅 **51.8%**。
+  图谱页同时展示"检索归属"与"内容判定"两组数字，**不要只看一组**。
+- **公开数据共享率 3.3%** 来自 120 篇随机文献逐条向 GEO 查询（95% CI 1.3–8.3%）。
+  若只用已采到的数据集反查会得到 2.0%，那是低估——覆盖不全不能当分母。
+- 国家分三种口径（作者机构 / 通讯作者 / 试验中心），**不可相加，也不可互相替代**；
+  抽样 200 条里只有 2 条摘要明写研究人群国家，因此"样本来源国"一律标未知。
+"""
+    )
+
     st.divider()
     st.subheader("人工修正 UBERON 标注")
     st.caption("仅用于修正 GEO 数据集（series）的解剖位置；写入本地 SQLite。")

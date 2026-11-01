@@ -54,18 +54,32 @@ def _geo_workbench(df: pd.DataFrame) -> None:
         ]
 
     c1, c2, c3 = st.columns(3)
-    c1.metric("当前筛选", f"{len(filtered):,} 条")
-    c2.metric("全库", f"{len(df):,} 条")
-    c3.metric("待复核", f"{int((df['needs_review'] == 1).sum()):,} 条")
+    c1.metric("当前筛选", f"{len(filtered):,} 个")
+    c2.metric("全库", f"{len(df):,} 个")
+    c3.metric("待复核", f"{int((df['needs_review'] == 1).sum()):,} 个")
+
+    # GEO 的 uid 就是 series UID：GSE = uid − 200000000，可直接跳原始页面
+    shown = filtered[
+        ["uid", "species", "anatomical_site", "uberon_id", "muscle_type", "title"]
+    ].copy()
+    try:
+        gse = "GSE" + (shown["uid"].astype(int) - 200000000).astype(str)
+        shown.insert(1, "GSE", gse)
+        shown["原始页面"] = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=" + gse
+    except (ValueError, TypeError):
+        pass
 
     st.dataframe(
-        filtered[
-            ["uid", "species", "anatomical_site", "uberon_id", "muscle_type", "title"]
-        ],
+        shown,
         use_container_width=True,
         hide_index=True,
         height=430,
+        column_config={
+            "原始页面": st.column_config.LinkColumn("原始页面", display_text="打开"),
+            "uid": st.column_config.TextColumn("uid（series UID）"),
+        },
     )
+    st.caption("GSE = uid − 200,000,000。一行是一个数据集（series），不是单个样本。")
     st.download_button(
         "⬇️ 导出当前筛选 CSV",
         data=filtered.to_csv(index=False).encode("utf-8-sig"),

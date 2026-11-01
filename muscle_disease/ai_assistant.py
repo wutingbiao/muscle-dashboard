@@ -96,22 +96,36 @@ def call_deepseek(api_key: str, query: str, schema: str) -> dict[str, Any]:
     return parse_json_response(content)
 
 
+def _site_key() -> str:
+    """站点级密钥：优先用 st.secrets 里配置的，没有就返回空串（页面再让用户自己填）。"""
+    try:
+        return str(st.secrets.get("DEEPSEEK_API_KEY", "")).strip()
+    except Exception:  # noqa: BLE001
+        return ""
+
+
 def render_ai_assistant() -> None:
     st.markdown("### 🧬 科研小助手")
     st.caption("用自然语言描述你要找的样本，AI 只提取筛选条件，不直接改数据。")
 
+    site_key = _site_key()
     with st.form("ai_assistant_form", clear_on_submit=False):
         query = st.text_input(
             "你想找什么？",
             placeholder="帮我找一下杜氏肌营养不良的样本",
             key="ai_query",
         )
-        api_key = st.text_input(
-            "DeepSeek API Key",
-            type="password",
-            help="仅用于本次请求，不写入文件，也不会显示在页面上。",
-            key="ai_api_key",
-        )
+        if site_key:
+            api_key = site_key
+            st.caption("站点已配置密钥，无需填写。")
+        else:
+            api_key = st.text_input(
+                "DeepSeek API Key",
+                type="password",
+                help="可选功能：仅用于本次请求，不写入文件，也不会显示在页面上。",
+                key="ai_api_key",
+            )
+            st.caption("可选功能：未配置站点密钥时，需自备 DeepSeek API Key；不填不影响浏览数据。")
         submitted = st.form_submit_button("🔍 分析查询意图", use_container_width=True)
 
     if submitted:
