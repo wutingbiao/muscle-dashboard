@@ -24,14 +24,7 @@ def _load_data(path: str) -> pd.DataFrame:
 
 
 def render_overview() -> None:
-    logo = Path(__file__).resolve().parent / "assets" / "logo_small.png"
-    if logo.is_file():
-        c_logo, c_title = st.columns([0.07, 0.93], vertical_alignment="center")
-        c_logo.image(str(logo), width=62)
-        with c_title:
-            st.title("肌因猎手 | GeneHunter", anchor=False)
-    else:
-        st.title("🧬 肌因猎手 | GeneHunter")
+    st.title("🧬 肌因猎手 | GeneHunter")
     st.markdown(
         "多物种肌肉疾病数据图谱 · **Multi-species Muscle Disease Atlas**  \n"
         "四个入口依次是：**数据**（有哪些公开数据集）→ **证据**（有哪些已标注证据）→ "

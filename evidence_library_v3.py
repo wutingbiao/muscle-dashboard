@@ -229,8 +229,8 @@ def _country_map(df: pd.DataFrame) -> None:
 
 def _spaceflight_tab() -> None:
     st.subheader("🚀 真实太空飞行 / 空间站肌肉数据")
-    st.caption(
-        "31 条真实在轨或空间站数据：27 条小鼠 OSD + 3 条人源肌肉芯片 + 1 条航天员单纤维蛋白组。"
+    st.markdown(
+        "**31 条真实在轨或空间站数据**：27 条小鼠 OSD + 3 条人源肌肉芯片 + 1 条航天员单纤维蛋白组。"
         "另有 10 条地面 HLS/辐射对照未计入。"
     )
     if not SPACEFLIGHT_PATH.is_file():
@@ -292,19 +292,15 @@ def _spaceflight_tab() -> None:
 
     table = data[
         [
-            "osd_id", "glds_accession", "title", "mission_group",
-            "species", "data_type", "muscle_type", "relevance_score", "osdr_url",
+            "osd_id", "title", "mission_group", "species", "muscle_type", "osdr_url",
         ]
     ].rename(
         columns={
             "osd_id": "编号",
-            "glds_accession": "GLDS/GEO",
             "title": "标题",
             "mission_group": "平台",
             "species": "物种",
-            "data_type": "数据类型",
             "muscle_type": "肌肉/模型",
-            "relevance_score": "相关性",
             "osdr_url": "原始来源",
         }
     )
@@ -314,7 +310,12 @@ def _spaceflight_tab() -> None:
         hide_index=True,
         height=460,
         column_config={
-            "原始来源": st.column_config.LinkColumn("原始来源", display_text="打开"),
+            "编号": st.column_config.TextColumn("编号", width="small"),
+            "标题": st.column_config.TextColumn("标题", width="large"),
+            "平台": st.column_config.TextColumn("平台", width="small"),
+            "物种": st.column_config.TextColumn("物种", width="small"),
+            "肌肉/模型": st.column_config.TextColumn("肌肉/模型", width="medium"),
+            "原始来源": st.column_config.LinkColumn("原始来源", display_text="打开", width="small"),
         },
     )
     st.caption(
@@ -353,54 +354,50 @@ def render_evidence() -> None:
         "只读快照，机器标注非人工已验证"
     )
 
-    sources = sorted(evidence["source_name"].dropna().unique())
-    subtypes = sorted(evidence["atrophy_subtype"].dropna().unique())
-    countries = sorted(set(_tokens(evidence["country"])))
-
-    with st.container(border=True):
-        f1, f2, f3 = st.columns([1.2, 1.2, 1.2])
-        selected_sources = f1.multiselect("来源", sources, default=sources)
-        selected_subtypes = f2.multiselect("萎缩亚型", subtypes, default=subtypes)
-        selected_countries = f3.multiselect("国家/地区", countries, default=[])
-        f4, f5 = st.columns([1, 2])
-        min_score = f4.slider("最低相关性", 3, 5, 3)
-        query = f5.text_input("搜索标题 / 摘要 / 编号")
-        mmut_only = f5.checkbox("只看 MMUT 相关（当前为 0）", value=False)
-
-    filtered = evidence[
-        evidence["source_name"].isin(selected_sources)
-        & evidence["atrophy_subtype"].isin(selected_subtypes)
-        & (evidence["relevance_score"] >= min_score)
-    ].copy()
-    if selected_countries:
-        filtered = filtered[
-            filtered["country"].map(
-                lambda value: bool(set(value.split("|")) & set(selected_countries))
-            )
-        ]
-    if query.strip():
-        needle = query.strip().casefold()
-        filtered = filtered[
-            filtered["title"].fillna("").str.casefold().str.contains(needle, regex=False)
-            | filtered["source_id"].fillna("").str.casefold().str.contains(needle, regex=False)
-            | filtered["brief_note"].fillna("").str.casefold().str.contains(needle, regex=False)
-        ]
-    if mmut_only:
-        filtered = filtered[
-            filtered["target_gene"].str.contains("MMUT", case=False, na=False)
-            | filtered["title"].str.contains("MMUT|methionine|methylmalonic", case=False, na=False)
-        ]
-
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("筛选后证据", f"{len(filtered)} / {len(evidence)}")
-    c2.metric("来源", f"{filtered['source_name'].nunique()} 类")
-    c3.metric("国家/地区", f"{len(set(_tokens(filtered['country'])))}")
-    c4.metric("MMUT 命中", f"{int(filtered['target_gene'].str.contains('MMUT', case=False, na=False).sum())}")
-
-    tab1, tab2, tab3 = st.tabs(
-        ["📋 证据检索", "🌍 全景图", "🚀 太空专项"]
-    )
+    tab1, tab2, tab3 = st.tabs(["📋 证据检索", "🌍 全景图", "🚀 太空专项"])
     with tab1:
+        sources = sorted(evidence["source_name"].dropna().unique())
+        subtypes = sorted(evidence["atrophy_subtype"].dropna().unique())
+        countries = sorted(set(_tokens(evidence["country"])))
+
+        with st.container(border=True):
+            f1, f2, f3 = st.columns([1.2, 1.2, 1.2])
+            selected_sources = f1.multiselect("来源", sources, default=sources)
+            selected_subtypes = f2.multiselect("萎缩亚型", subtypes, default=subtypes)
+            selected_countries = f3.multiselect("国家/地区", countries, default=[])
+            f4, f5 = st.columns([1, 2])
+            min_score = f4.slider("最低相关性", 3, 5, 3)
+            query = f5.text_input("搜索标题 / 摘要 / 编号")
+            mmut_only = f5.checkbox("只看 MMUT 相关（当前为 0）", value=False)
+
+        filtered = evidence[
+            evidence["source_name"].isin(selected_sources)
+            & evidence["atrophy_subtype"].isin(selected_subtypes)
+            & (evidence["relevance_score"] >= min_score)
+        ].copy()
+        if selected_countries:
+            filtered = filtered[
+                filtered["country"].map(
+                    lambda value: bool(set(value.split("|")) & set(selected_countries))
+                )
+            ]
+        if query.strip():
+            needle = query.strip().casefold()
+            filtered = filtered[
+                filtered["title"].fillna("").str.casefold().str.contains(needle, regex=False)
+                | filtered["source_id"].fillna("").str.casefold().str.contains(needle, regex=False)
+                | filtered["brief_note"].fillna("").str.casefold().str.contains(needle, regex=False)
+            ]
+        if mmut_only:
+            filtered = filtered[
+                filtered["target_gene"].str.contains("MMUT", case=False, na=False)
+                | filtered["title"].str.contains("MMUT|methionine|methylmalonic", case=False, na=False)
+            ]
+
+        st.caption(
+            f"筛选后 **{len(filtered)} / {len(evidence)}** 条 · 来源 {filtered['source_name'].nunique()} 类 · 国家/地区 {len(set(_tokens(filtered['country'])))} 个 · MMUT 命中 0"
+        )
+        st.session_state["evidence_filtered"] = filtered
         view = filtered[
             [
                 "source_type", "source_id", "title", "atrophy_subtype",
@@ -453,6 +450,7 @@ def render_evidence() -> None:
             if row["source_url"]:
                 st.link_button("🔗 打开原始来源", row["source_url"])
     with tab2:
+        filtered = st.session_state.get("evidence_filtered", evidence)
         left, right = st.columns(2)
         with left:
             _sankey(filtered)
