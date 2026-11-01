@@ -347,8 +347,11 @@ def render_evidence() -> None:
         st.error(f"找不到证据数据：`{DATA_PATH}`")
         return
     evidence = _load(str(DATA_PATH))
-    st.title("🧪 肌因猎手 · 证据库")
-    st.caption(f"{len(evidence)} 条公开证据 · DeepSeek 结构化标注 · 只读数据快照")
+    st.title("🧪 证据")
+    st.caption(
+        f"本页回答：有哪些已标注的证据？{len(evidence)} 条公开证据 · DeepSeek 结构化标注 · "
+        "只读快照，机器标注非人工已验证"
+    )
 
     sources = sorted(evidence["source_name"].dropna().unique())
     subtypes = sorted(evidence["atrophy_subtype"].dropna().unique())

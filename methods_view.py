@@ -22,8 +22,8 @@ def _counts() -> tuple[int, int]:
 
 def render_methods() -> None:
     evidence_count, source_count = _counts()
-    st.title("⚙️ 方法与维护")
-    st.caption("数据口径、来源边界、人工修正入口")
+    st.title("⚙️ 方法")
+    st.caption("本页回答：这些数字怎么来的、边界在哪、哪里可以人工修正")
 
     c1, c2, c3 = st.columns(3)
     c1.metric("证据快照", f"{evidence_count} 条")

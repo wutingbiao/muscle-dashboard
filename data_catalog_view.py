@@ -85,12 +85,12 @@ def _geo_workbench(df: pd.DataFrame) -> None:
 
 
 def render_data_catalog() -> None:
-    st.title("🗂 数据目录")
-    st.caption("目录：GEO 3,593 个数据集（series）+ scBaseCount 人类肌肉 540 条样本。")
+    st.title("🗂 数据")
+    st.caption("本页回答：有哪些公开数据集可用？GEO 3,593 个 series · scBaseCount 540 条人类肌肉样本")
     st.info(
-        "这里放的是数据集目录（GEO，每个 series 内含多个样本）与样本目录（scBaseCount），"
-        "不是 185 条证据。"
-        "证据库在另一个顶层入口。"
+        "四个页签依次是：GEO 数据集（数据集级目录）、人类肌肉目录（样本级）、"
+        "分布（组织/物种结构）、时空漫游（Mock 演示）。"
+        "证据在另一个顶层入口，不要与本页混读。"
     )
     if not DB_PATH.is_file():
         st.error(f"找不到数据库：`{DB_PATH}`")
@@ -98,11 +98,16 @@ def render_data_catalog() -> None:
     df = _load_geo(str(DB_PATH))
     all_muscle, skeletal, atrophy, core, summary = load_catalog()
 
-    tab1, tab2, tab3 = st.tabs(["🗂 GEO 数据集", "🧬 人类肌肉目录", "⏳ 时空漫游"])
+    tab1, tab2, tab3, tab4 = st.tabs(["🗂 GEO 数据集", "🧬 人类肌肉目录", "📊 分布", "⏳ 时空漫游"])
     with tab1:
         _geo_workbench(df)
     with tab2:
         render_catalog(show_title=False)
     with tab3:
+        from geo_distribution import render_geo_distribution
+
+        render_geo_distribution(df)
+    with tab4:
         st.subheader("⏳ 数据时空漫游")
+        st.caption("Mock 年份分配的演示视图，不代表真实时间分布。")
         render_timeline(core)

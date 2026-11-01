@@ -143,35 +143,36 @@ hr { border-color: var(--line); }
     unsafe_allow_html=True,
 )
 
-view_default = "📊 概览"
-if st.query_params.get("view") == "evidence":
-    view_default = "🧪 证据库"
-elif st.query_params.get("view") == "methods":
-    view_default = "⚙️ 方法与维护"
-elif st.query_params.get("view") == "atlas":
+view_default = "📊 总览"
+_qp = st.query_params.get("view")
+if _qp in {"data", "catalog", "tools"}:
+    view_default = "🗂 数据"
+elif _qp in {"evidence"}:
+    view_default = "🧪 证据"
+elif _qp in {"atlas"}:
     view_default = "📈 图谱"
-elif st.query_params.get("view") in {"catalog", "tools"}:
-    view_default = "🗂 数据目录"
+elif _qp in {"method", "methods"}:
+    view_default = "⚙️ 方法"
 view = st.segmented_control(
     "页面视图",
-    ["📊 概览", "🗂 数据目录", "🧪 证据库", "📈 图谱", "⚙️ 方法与维护"],
+    ["📊 总览", "🗂 数据", "🧪 证据", "📈 图谱", "⚙️ 方法"],
     default=view_default,
     label_visibility="collapsed",
     key="top_level_view",
     width="content",
     wrap=True,
 )
-if view == "📊 概览":
+if view == "📊 总览":
     from overview_view import render_overview
 
     render_overview()
     st.stop()
-if view == "🗂 数据目录":
+if view == "🗂 数据":
     from data_catalog_view import render_data_catalog
 
     render_data_catalog()
     st.stop()
-if view == "🧪 证据库":
+if view == "🧪 证据":
     from evidence_library_v3 import render_evidence
 
     render_evidence()
@@ -181,7 +182,7 @@ if view == "📈 图谱":
 
     render_atlas()
     st.stop()
-if view == "⚙️ 方法与维护":
+if view == "⚙️ 方法":
     from methods_view import render_methods
 
     render_methods()
